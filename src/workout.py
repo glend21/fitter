@@ -10,8 +10,10 @@ import io
 from typing import Dict, Union, Optional,Tuple
 
 import pandas as pd
+
 import fitdecode as fit
 import geojson
+import folium
 
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
@@ -84,7 +86,7 @@ class Workout:
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
         print( type( self.js_geo ) )
-        geostr = geojson.dumps( self.js_geo )
+        geostr = geojson.dumps( self.js_geo, indent=2 )
 
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
@@ -143,6 +145,7 @@ class Workout:
         self.df_points[ "position_lat" ] = self.df_points[ "position_lat" ] / ( (2 ** 32) / 360 )
         self.df_points[ "position_long" ] = self.df_points[ "position_long" ] / ( (2 ** 32) / 360 )
         self.df_points.fillna( method="bfill", inplace=True )        # NaNs == bad
+        self.df_points.fillna( method="ffill", inplace=True )
 
         self.df_laps = pd.DataFrame( lap_data, columns=_LAP_FEATURES )
 
@@ -250,7 +253,7 @@ class Workout:
             raise IOError( "Reached EOF reading %s data" % name )
 
         if len( rawstr ) > 0:
-            geo = geojson.loads( io.StringIO( rawstr ) )
+            geo = geojson.loads( rawstr )
             return geo
 
         return None
@@ -259,11 +262,19 @@ class Workout:
 
 if __name__ == "__main__":
     # testing only
-    s = "/mnt/h_drive/SuuntoDiaspora/Move_2021_01_25_17_36_09_Running.fit"
-    d = "../data"
+    s = "/mnt/h_drive/SuuntoDiaspora/Running_2021-01-27T17_29_13.fit"
+    d = "./"
     wo = Workout()
     wo.ingest( s, d )
     wo.save( d, "wibble" )
 
     new_wo = Workout()
-    new_wo.load( os.path.join( d, "wibble" ) )
+    new_wo.load( d, "wibble" )
+
+    mymap = folium.Map( location=[ -31.947, 115.859 ], zoom_start=15 )
+    folium.GeoJson( new_wo.js_geo,
+                    name="Run"
+                    #style_function=style
+                  ).add_to( mymap )
+    mymap.save( "foo.html" )
+
