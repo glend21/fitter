@@ -61,25 +61,16 @@ class Workout:
         try:
             print( "Load '%s'" % os.path.join( fdir, fname ) )
             with open( os.path.join( fdir, fname ), "rt" ) as ifh:
-                print('a')
                 header = ifh.readline()
-                print('b')
                 [shdr, spts, slaps, sgeo] = [ int(v) for v in header.split() ]
-                print('c')
 
                 self.df_header = self._load_dataframe( ifh, shdr, "header" )
-                print('d')
                 self.df_points = self._load_dataframe( ifh, spts, "points" )
-                print('e')
                 self.df_laps = self._load_dataframe( ifh, slaps, "laps" )
-                print('f')
                 self.df_geo = self._load_dataframe( ifh, sgeo, "geo" )
-                print('g')
 
         except IOError as ex:
-            print( type( ex ) )
             err = "ERR: %s" % ex
-            print( err )        # DEBUG
             return err
 
         return ""
@@ -98,7 +89,6 @@ class Workout:
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
 
-        print( "WRITING %d bytes of point data" % len(ptstr) )
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
         #   Each block is a dataframe with a header line
@@ -152,7 +142,6 @@ class Workout:
                         self._process_lap( frame, lap_data )
 
                     elif frame.name == "record":
-                        print("R %d" % len( point_data ) )
                         self._process_record( frame, point_data )
 
         # Create dataframes from the lists (and perform some cleanups)
@@ -177,16 +166,12 @@ class Workout:
 
     def _process_record( self, frame, points ):
         ''' Process a frame representing a track point '''
-        if frame.has_field( _POINT_FEATURES[0] ):   # and \
-            #frame.has_field( _POINT_FEATURES[1] ):
-            print( " r 1" )
+        if frame.has_field( _POINT_FEATURES[0] ):
             # This frame contains data about a "track point".
             # Build a vanilla Python list of the data
             pt: Dict[ str, Union[ float, int, str, datetime ] ] = {}
             for fld in _POINT_FEATURES:
-                print( " r 2" )
                 if frame.has_field( fld ):
-                    print( " r 3" )
                     pt[ fld ] = frame.get_value( fld )
             points.append( pt )
 
@@ -207,7 +192,6 @@ class Workout:
                     # And we only want the first word of the column header
                     # ... and only the first occurance of that column name. Jeebus ...
                     if df[ col ][ 0 ].split()[ 0 ] == feat and vals[ idx ] == "":
-                        print( " %s --> %s" % (df[ col ][ 0 ], df[ col ][ 1 ]) )
                         vals[ idx ] = df[ col ][ 1 ]
 
         except FileNotFoundError as ex:
@@ -217,8 +201,6 @@ class Workout:
             vals = [ "", "", "", "" ]
 
         # Turn the vals list into an object dataframe
-        print( vals )
-        print( _HEADER_FEATURES )
         self.df_header = pd.DataFrame( [ vals ], columns=_HEADER_FEATURES )
         print( " ... processed an xlsx file" )
 
