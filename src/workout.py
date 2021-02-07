@@ -11,6 +11,7 @@ from typing import Dict, Union, Optional,Tuple
 
 import pandas as pd
 import fitdecode as fit
+import geojson
 
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
@@ -23,10 +24,10 @@ class Workout:
 
     def __init__( self, fname=None ):
         ''' ctor '''
+        self.df_header = None
         self.df_points = None
         self.df_laps = None
-        self.df_geo = None
-        self.df_header = None
+        self.js_geo = None
 
         if not fname is None:
             self.load( fname )
@@ -67,7 +68,7 @@ class Workout:
                 self.df_header = self._load_dataframe( ifh, shdr, "header" )
                 self.df_points = self._load_dataframe( ifh, spts, "points" )
                 self.df_laps = self._load_dataframe( ifh, slaps, "laps" )
-                self.df_geo = self._load_dataframe( ifh, sgeo, "geo" )
+                self.df_geo = self._load_json( ifh, sgeo, "geo" )
 
         except IOError as ex:
             err = "ERR: %s" % ex
@@ -79,15 +80,11 @@ class Workout:
     def save( self, destdir, name ):
         ''' Save the object state to disk in destdir '''
 
-        outstr = ""
-        hdrstr = ""
-        ptstr = ""
-        lapstr = ""
-        geostr = ""
-
         hdrstr = self.df_header.to_csv( path_or_buf=None, na_rep="NaN" )
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
+        print( type( self.js_geo ) )
+        geostr = geojson.dumps( self.js_geo )
 
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
@@ -121,9 +118,6 @@ class Workout:
         if retval == "":
             self.save( destdir, "%s.df" % src[ 'stub' ] )
 
-        # DEBUG
-        self.load( destdir, "%s.df" % src[ 'stub' ] )
-
         return retval
 
 
@@ -151,6 +145,10 @@ class Workout:
         self.df_points.fillna( method="bfill", inplace=True )        # NaNs == bad
 
         self.df_laps = pd.DataFrame( lap_data, columns=_LAP_FEATURES )
+
+        # Now some geojson
+        self._make_geo()
+
         return ""
 
 
@@ -222,6 +220,41 @@ class Workout:
             return df
 
         return None
+
+
+    def _make_geo( self ):
+        ''' Creates the geojson object from the points dataframe '''
+
+        # Create a list of coordinates, turn those into linestring endpoints, contstruct
+        # the actuall linestrings from those, and add them to the feature list
+        # (long, lat) -- this is important
+        coords = list( zip( self.df_points.position_long, self.df_points.position_lat ) )
+        features = []
+        for i in range( len( coords ) - 1 ):
+            endpt = ( coords[ i ], coords[ i + 1 ] )
+            props = { "hr" : self.df_points[ "heart_rate" ] }
+            if "power" in self.df_points.columns:
+                props[ "pwr" ] : self.df_points[ "power" ][ i ]
+
+            features.append( geojson.Feature( geometry=geojson.LineString( endpt ), 
+                                              properties={}
+                                            )
+                           )
+        self.js_geo = geojson.FeatureCollection( features )
+           
+
+    def _load_json( self, ifile, offset, name="" ):
+        ''' Reads the geo json component of the input stream '''
+        rawstr = ifile.read( offset )
+        if len( rawstr ) != offset:
+            raise IOError( "Reached EOF reading %s data" % name )
+
+        if len( rawstr ) > 0:
+            geo = geojson.loads( io.StringIO( rawstr ) )
+            return geo
+
+        return None
+
 
 
 if __name__ == "__main__":

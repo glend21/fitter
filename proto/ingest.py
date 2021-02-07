@@ -39,14 +39,12 @@ def main( argc, argv ):
                     
                     elif frame.name == 'record':
                         for f in frame.fields:
-                            print( f.name )
 
                         if frame.has_field( POINT_FEATURES[0] ) and \
                            frame.has_field( POINT_FEATURES[1] ):
                            # FIXME not all record frames will have lat/long data
                            # eg. swimming, indoor rowing, gym, etc
-                           
-                            print( 'a' )
+
                             # This frame contains data about a "track point".
                             # Build a vanilla Python list of the data
                             pt: Dict[ str, Union[ float, int, str, datetime ] ] = {}
