@@ -177,8 +177,8 @@ class Workout:
 
     def _process_record( self, frame, points ):
         ''' Process a frame representing a track point '''
-        if frame.has_field( _POINT_FEATURES[0] ) and \
-            frame.has_field( _POINT_FEATURES[1] ):
+        if frame.has_field( _POINT_FEATURES[0] ):   # and \
+            #frame.has_field( _POINT_FEATURES[1] ):
             print( " r 1" )
             # This frame contains data about a "track point".
             # Build a vanilla Python list of the data
