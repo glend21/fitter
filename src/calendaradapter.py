@@ -4,6 +4,8 @@
     Adapter to allow the calendar component to communicate with the server page
 '''
 
+import sys
+
 from fitcalendar import Calendar
 
 
@@ -15,7 +17,7 @@ class CalendarAdapter():
         self.cal = None
 
 
-    def get_days( year, month ):
+    def get_days( self, year, month ):
         ''' Gets all days for the given year and month
             Returns a list of
                 {
@@ -24,8 +26,8 @@ class CalendarAdapter():
                 }
         '''
 
-        if cal is None or cal.get_date() != (year, month):
-            self.cal = Calendar( year, month )
+        if self.cal is None or self.cal.get_date() != (year, month - 1):        # DEBUG
+            self.cal = Calendar( year, month - 1)
 
         sessions = self.cal.get_monthly()
         data = []
@@ -43,10 +45,21 @@ class CalendarAdapter():
 
             data.append( 
                 {
-                    'daynum' : day,
+                    'daynum' : day + 1,     # days in month are 1-based
                     'session' : mnemonic
                 } )
 
+        return data
 
-#TODO TestMe
+
+
+def _test( argc, argv ):
+    ''' unit testing '''
+
+    cad = CalendarAdapter()
+
+    print( cad.get_days( 2021, 1 ) )
     
+
+if __name__ == "__main__":
+    _test( len( sys.argv ), sys.argv )

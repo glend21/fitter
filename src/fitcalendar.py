@@ -36,13 +36,13 @@ class Calendar():
         ''' Returns the summary data for the month '''
         return self.sessions
 
-    def get_date():
+    def get_date( self ):
         ''' Returns the year and month that this calenddar is for '''
         return (self.year, self.month)
 
-    def get_max_days():
+    def get_max_days( self ):
         ''' Returns the number of days in this calendar's month '''
-        return calendar.monthrange()[ 1 ]
+        return calendar.monthrange( self.year, self.month )[ 1 ]
 
 
     # protected:
@@ -60,7 +60,7 @@ class Calendar():
             # Need to build a list of data items for each day, even if that list contains
             # only 1 workout
             if day not in self.sessions:
-                self.sessions[ day ] = []
+                self.sessions[ int( day ) ] = []
 
             self.sessions[ int( day ) ].append(
                     { 'day' : day,
@@ -72,7 +72,7 @@ class Calendar():
 
 
 
-def test( argc, argv ):
+def _test( argc, argv ):
     ''' unit testing '''
 
     cal = Calendar( 2019 )
@@ -81,4 +81,4 @@ def test( argc, argv ):
 
 
 if __name__ == "__main__":
-    test( len( sys.argv ), sys.argv )
+    _test( len( sys.argv ), sys.argv )
