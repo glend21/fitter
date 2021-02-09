@@ -7,6 +7,7 @@
 import os
 import sys
 import datetime
+import calendar
 import glob
 
 
@@ -25,7 +26,7 @@ class Calendar():
 
         self.year = year
         self.month = month
-        self.sessions = []
+        self.sessions = {}
 
         self._doInit()
 
@@ -34,6 +35,14 @@ class Calendar():
     def get_monthly( self ):
         ''' Returns the summary data for the month '''
         return self.sessions
+
+    def get_date():
+        ''' Returns the year and month that this calenddar is for '''
+        return (self.year, self.month)
+
+    def get_max_days():
+        ''' Returns the number of days in this calendar's month '''
+        return calendar.monthrange()[ 1 ]
 
 
     # protected:
@@ -47,14 +56,19 @@ class Calendar():
             parts = base.split( '_' )
             day = parts[ 3 ]
             activity = parts[ -1 ]  # part after last underscore
-            self.sessions.append(
+
+            # Need to build a list of data items for each day, even if that list contains
+            # only 1 workout
+            if day not in self.sessions:
+                self.sessions[ day ] = []
+
+            self.sessions[ int( day ) ].append(
                     { 'day' : day,
                       'month' : self.month,
                       'year' : self.year,
                       'fname' : f,
                       'activity' : activity
-                    }
-                )
+                    } )
 
 
 

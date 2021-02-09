@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 
+<!--
+    days: list of all days in the month
+            {
+                daynum: day of the month
+                session: S, B, R, G, str (etch), M (ore than one)
+            }
+-->
+
 {% block style %}
 
 {% endblock %}
@@ -9,7 +17,11 @@
 
     <ul class="list-group">
         {% for d in days %}
-            <li class="list-group-item">{{d.title}}</li>
+            <li class="list-group-item">
+                {{d.daynum}}<br>
+                {{d.ssion}}
+            </li>
+
         {% endfor %}
     </ul>
 {% endblock %}

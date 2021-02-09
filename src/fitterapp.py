@@ -6,17 +6,22 @@
 
 import os
 import sys
-
+from datetime import date
 
 from flask import Flask, render_template
+
+from calendaradapter import CalendarAdapter
 
 
 app = Flask( __name__ )
 
+caladp = CalendarAdapter()
+
 
 @app.route( "/" )
-def month_cur():
-    return render_template( "home.html" )
+def home():
+    today = date.today()
+    return render_template( "month.html", days=caladp.get_days( today.year, today.month ) )
 
 
 @app.route( "/about" )
