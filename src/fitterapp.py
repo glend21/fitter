@@ -21,56 +21,15 @@ caladp = CalendarAdapter()
 @app.route( "/" )
 def home():
     today = date.today()
-    return render_template( "month.html", days=caladp.get_days( today.year, today.month ) )
+    return render_template( "month.html", 
+                            year=today.year, 
+                            month=today.strftime( "%B" ),
+                            days=caladp.get_days( today.year, today.month ) )
 
 
 @app.route( "/about" )
 def about():
     return render_template( "About.html" )
-
-
-dummy_data = [
-                {
-                    'num': 1,
-                    'title': 'sdfsff',
-                    'desc': 'a'
-                },
-                {
-                    'num': 2,
-                    'title': 'dfsfsfdf',
-                    'desc': 'b'
-                },
-                {
-                    'num': 3,
-                    'title': 'ggthrnrnry',
-                    'desc': 'c'
-                },
-                {
-                    'num': 4,
-                    'title': 'aaa',
-                    'desc': 'd'
-                },
-                {
-                    'num': 5,
-                    'title': '2345678',
-                    'desc': 'e'
-                },
-                {
-                    'num': 6,
-                    'title': 'bsbetrter',
-                    'desc': 'f'
-                },
-                {
-                    'num': 7,
-                    'title': 'asdfghj',
-                    'desc': 'g'
-                },
-                {
-                    'num': 8,
-                    'title': 'wrwrewrewerwerw',
-                    'desc': 'h'
-                },
-             ]
 
 
 @app.route( "/month" )
