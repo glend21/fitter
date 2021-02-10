@@ -63,9 +63,9 @@ class Calendar():
                 self.sessions[ int( day ) ] = []
 
             self.sessions[ int( day ) ].append(
-                    { 'day' : day,
-                      'month' : self.month,
-                      'year' : self.year,
+                    { 'day' : int( day ),
+                      'month' : int( self.month ),
+                      'year' : int( self.year ),
                       'fname' : f,
                       'activity' : activity
                     } )

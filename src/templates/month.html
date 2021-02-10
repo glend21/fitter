@@ -40,7 +40,9 @@
         {% for d in days %}
             <li>
                 {{d.daynum}}<br>
-                {{d.session}}
+                {% for s in d.sessions %}
+                    <a href="/workout/{{s.url}}">{{s.mnemonic}}</a>
+                {% endfor %}
             </li>
 
         {% endfor %}

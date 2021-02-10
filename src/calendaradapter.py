@@ -26,30 +26,40 @@ class CalendarAdapter():
                 }
         '''
 
-        if self.cal is None or self.cal.get_date() != (year, month - 1):        # DEBUG
-            self.cal = Calendar( year, month - 1)
+        if self.cal is None or self.cal.get_date() != (year, month):
+            self.cal = Calendar( year, month )
 
         sessions = self.cal.get_monthly()
-        data = []
+        alldata = []
         for day in range( self.cal.get_max_days() ):
+            data = {}
             if day in sessions:
                 # We may (will) have more than one session per date.
                 # This means the FitCalendar will have to return a list for each date
+                # mnemonics = []
+                # urls = []
                 daily = sessions[ day ]
-                if len( daily ) > 1:
-                    mnemonic = 'M'
-                else:
-                    mnemonic = daily[ 0 ][ 'activity' ][ 0 ]    # first letter of the only sess 
-            else:
-                mnemonic = ''
+                for ids, sess in enumerate( daily ):
+                    data[ 'mnemonic' ] = sess[ 'activity' ][ 0 ]
+                    data[ 'url' ] = "/workout/%04d%02d%02d-%02d" % \
+                                    (sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx)  
 
-            data.append( 
+                    #mnemonics.append( sess[ 'activity' ][ 0 ] )
+                    #urls.append( "/workout/%04d%02d%02d-%02d" % \
+                                 #(sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx) )
+            else:
+                data[ 'mnemonic' ] = '-'
+                data[ 'url' ] = ''
+
+            alldata.append( 
                 {
                     'daynum' : day + 1,     # days in month are 1-based
-                    'session' : mnemonic
+                    'sessions' : data
+                    #'sessions' : mnemonics,
+                    #'links' : urls
                 } )
 
-        return data
+        return alldata
 
 
 
