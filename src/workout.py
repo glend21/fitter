@@ -7,6 +7,8 @@
 import os
 import sys
 import io
+import re
+import pathlib
 from typing import Dict, Union, Optional,Tuple
 
 import pandas as pd
@@ -39,24 +41,9 @@ class Workout:
     def ingest( self, fname, destdir ):
         ''' Build the data store for the workout from the input file(s) '''
 
-        srcdir, srcfname = os.path.split( fname )
-        srcstub, srcext = os.path.splitext( srcfname )
-        src = { 'dir' : srcdir,
-                'fname' : srcfname,
-                'stub' : srcstub,
-                'ext' : srcext,
-                'fullpath' : fname
-              }
-
-        if src[ 'ext' ] != ".fit" :
-            return "No .FIT file specified"
-
-        if self._isIngested( destdir, src[ 'stub' ] ):
-            # Nothing to do, but should log something here
-            print( " ... already ingested." )
-            return ""
-
-        return self._doIngest( src, destdir )
+        fileset = self._canIngest( fname, destdir )
+        if fileset is not None:
+            return self._doIngest( fileset )
 
 
     def load( self, fdir, fname ):
@@ -79,13 +66,12 @@ class Workout:
         return ""
 
 
-    def save( self, destdir, name ):
+    def save( self, dest ):
         ''' Save the object state to disk in destdir '''
 
         hdrstr = self.df_header.to_csv( path_or_buf=None, na_rep="NaN" )
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
-        print( type( self.js_geo ) )
         geostr = geojson.dumps( self.js_geo, indent=2 )
 
         # Format: The first line contains the lengths of the following blocks, with a newline
@@ -97,12 +83,37 @@ class Workout:
         outstr += lapstr
         outstr += geostr
 
-        with open( os.path.join( destdir, name ), "wt" ) as ofh:
+        with open( dest, "wt" ) as ofh:
             ofh.write( outstr )
-        print( " ... saved to %s" % os.path.join( destdir, name ) )
+        print( " ... saved to %s" % dest )
 
 
     # protected: 
+    def _normalise_name_stub( self, iname ):
+        ''' Ensures the filename is standard format:
+            Move_<yyyy>_<mm>_<dd>_<hh>_<MM>_<ss>_<type>
+
+            Note the xtension is omited, this is left as an exercise for the caller
+        '''
+
+        if iname[ 0 : 4] == "Move":
+            return iname
+
+        # Yes, yes I am ...
+        match = re.match( r"^\w+_(\d{4})-(\d{2})-(\d{2})T(\d{2})_(\d{2})_(\d{2}).fit", iname )
+        if not match:
+            raise ValueError( "'%s' has unknown name format" )
+
+        ofname = "Move_%s_%s_%s_%s_%s_%s" % ( \
+                        match[ 1 ],         # year
+                        match[ 2 ],         # month
+                        match[ 3 ],         # day
+                        match[ 4 ],         # hour
+                        match[ 5 ],         # minute
+                        match[ 6 ] )        # second
+        return ofname
+
+
     def _isIngested( self, destdir, srcstub ):
         ''' Returns True if this file has already been processed '''
 
@@ -110,15 +121,65 @@ class Workout:
         return os.path.exists( "%s.df" % os.path.join( destdir, srcstub ) )
 
 
-    def _doIngest( self, src, destdir ):
+    def _canIngest( self, inpath, outdir ):
+        ''' Determines what, if any, work needs to be done for this file path
+            Returns:
+                {
+                    datafile : full path to .fir file
+                    auxfile : full path to .xlsx, if one is present
+                    outfile : full path to output .df file
+                }
+            None if .fit file does not exist, or if .df file exists and is older than
+                    both .fit and .xlsx files
+
+            It is OK for the .xlsx to be missing
+            It is mandatory for the .fit to be present
+        '''
+        srcdir, srcfname = os.path.split( inpath )
+        srcstub, srcext = os.path.splitext( srcfname )
+        retval = { 'datafile' : inpath,
+                   'auxfile' : os.path.join( srcdir, "%s.xlsx" % srcfname ),
+                   'outfile' : os.path.join( outdir, "%s.df" % self._normalise_name_stub( srcfname ) )
+                 }
+
+        dname = pathlib.Path( retval[ 'datafile' ] )
+        aname = pathlib.Path( retval[ 'auxfile' ] )
+        oname = pathlib.Path( retval[ 'outfile' ] )
+
+        # If no .fit file, nothing to do
+        if not dname.exists():
+            return None
+
+        # If no .df file, must perform the ingest
+        if not oname.exists():
+            return retval
+
+        files = [ dname ]
+        if aname.exists():
+            files.append( aname )
+        else:
+            retval[ 'auxfile' ] = None
+
+        # If any file in the input set is newer than the output file, ingest
+        for f in files:
+            if f.stat().st_ctime > oname.stat().st_ctime:
+                return retval
+
+        # Output file exists, is newer than all input file(s), do nothing
+        return None
+
+
+    # --
+    def _doIngest( self, files ):
         ''' Build the data store '''
 
-        retval = self._ingest_fit( src )
+        retval = self._ingest_fit( files[ 'datafile' ] )
         if retval == "":
-            retval = self._ingest_xlsx( src )
+            if files[ 'auxfile' ] != None:
+                retval = self._ingest_xlsx( files[ 'auxfile' ] )
 
         if retval == "":
-            self.save( destdir, "%s.df" % src[ 'stub' ] )
+            self.save( files[ 'outfile' ] )
 
         return retval
 
@@ -131,7 +192,7 @@ class Workout:
 
         point_data = []
         lap_data = []
-        with fit.FitReader( src[ 'fullpath' ] ) as ifh:
+        with fit.FitReader( src ) as ifh:
             for frame in ifh:
                 if isinstance( frame, fit.records.FitDataMessage ):
                     if frame.name == "lap":
@@ -181,11 +242,10 @@ class Workout:
         ''' Process a single .xlsx file
             Updates the object's internal state
         '''
-        fname = "%s.xlsx" % os.path.join( src[ 'dir' ], src[ 'stub' ] )
         vals = [ "" ] * len( _HEADER_FEATURES )
 
         try:
-            df = pd.read_excel( fname )
+            df = pd.read_excel( src )
 
             # Stoopid export format of the .xlsx file doesn't put feature names in the first row
             for idx, feat in enumerate( _HEADER_FEATURES ):
@@ -201,9 +261,12 @@ class Workout:
             print( " ... no .xlsx to process" )
             vals = [ "", "", "", "" ]
 
-        # Turn the vals list into an object dataframe
-        self.df_header = pd.DataFrame( [ vals ], columns=_HEADER_FEATURES )
-        print( " ... processed an xlsx file" )
+        else:
+            print( " ... processed an xlsx file" )
+
+        finally:
+            # Turn the vals list into an object dataframe
+            self.df_header = pd.DataFrame( [ vals ], columns=_HEADER_FEATURES )
 
         return ""
 
@@ -266,8 +329,9 @@ if __name__ == "__main__":
     d = "./"
     wo = Workout()
     wo.ingest( s, d )
-    wo.save( d, "wibble" )
+    #wo.save( d, "wibble" )
 
+'''
     new_wo = Workout()
     new_wo.load( d, "wibble" )
 
@@ -277,4 +341,4 @@ if __name__ == "__main__":
                     #style_function=style
                   ).add_to( mymap )
     mymap.save( "foo.html" )
-
+'''
