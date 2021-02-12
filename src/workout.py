@@ -9,6 +9,7 @@ import sys
 import io
 import re
 import pathlib
+import gzip
 from typing import Dict, Union, Optional,Tuple
 
 import pandas as pd
@@ -46,12 +47,12 @@ class Workout:
             return self._doIngest( fileset )
 
 
-    def load( self, fdir, fname ):
+    def load( self, src ):
         ''' Loads the df file from disk '''
         try:
-            print( "Load '%s'" % os.path.join( fdir, fname ) )
-            with open( os.path.join( fdir, fname ), "rt" ) as ifh:
-                header = ifh.readline()
+            print( "Load '%s'" % src )
+            with gzip.open( src, "rb" ) as zifh:
+                header = zifh.readline()
                 [shdr, spts, slaps, sgeo] = [ int(v) for v in header.split() ]
 
                 self.df_header = self._load_dataframe( ifh, shdr, "header" )
@@ -83,8 +84,8 @@ class Workout:
         outstr += lapstr
         outstr += geostr
 
-        with open( dest, "wt" ) as ofh:
-            ofh.write( outstr )
+        with gzip.open( dest, "wb" ) as zofh:
+            zofh.write( str.encode( outstr ) )
         print( " ... saved to %s" % dest )
 
 
@@ -114,13 +115,6 @@ class Workout:
         return ofname
 
 
-    def _isIngested( self, destdir, srcstub ):
-        ''' Returns True if this file has already been processed '''
-
-        # Todo relative modification time check
-        return os.path.exists( "%s.df" % os.path.join( destdir, srcstub ) )
-
-
     def _canIngest( self, inpath, outdir ):
         ''' Determines what, if any, work needs to be done for this file path
             Returns:
@@ -139,7 +133,7 @@ class Workout:
         srcstub, srcext = os.path.splitext( srcfname )
         retval = { 'datafile' : inpath,
                    'auxfile' : os.path.join( srcdir, "%s.xlsx" % srcfname ),
-                   'outfile' : os.path.join( outdir, "%s.df" % self._normalise_name_stub( srcfname ) )
+                   'outfile' : os.path.join( outdir, "%s.dfz" % self._normalise_name_stub( srcfname ) )
                  }
 
         dname = pathlib.Path( retval[ 'datafile' ] )
@@ -331,10 +325,11 @@ if __name__ == "__main__":
     wo.ingest( s, d )
     #wo.save( d, "wibble" )
 
-'''
     new_wo = Workout()
-    new_wo.load( d, "wibble" )
+    new_wo.load( "./Move_Running_2021_01_27_17_29_13.dfz" )
+    print( wo.df_points )
 
+'''
     mymap = folium.Map( location=[ -31.947, 115.859 ], zoom_start=15 )
     folium.GeoJson( new_wo.js_geo,
                     name="Run"
