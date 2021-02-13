@@ -21,6 +21,7 @@ import folium
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
 _POINT_FEATURES = ( "timestamp", "position_lat", "position_long", "heart_rate", "altitude", "speed", "vertical_speed", "cadence", "power" )
+_POINT_DATA_FEATURES =_POINT_FEATURES[ 3 : ]
 _LAP_FEATURES = ( "number", "start_time", "total_distance", "total_elapsed_time", "max_speed", "max_heart_rate", "avg_heart_rate" )
 
 
@@ -89,6 +90,15 @@ class Workout:
         print( " ... saved to %s" % dest )
 
 
+    def feature_list( self ):
+        ''' Returns the available features for the data '''
+        if not self.df_points is None:
+            dataset = set( self.df_points.columns.tolist() )
+            return dataset.intersection( _POINT_DATA_FEATURES )
+
+        return None
+
+
     # protected: 
     def _normalise_name_stub( self, iname ):
         ''' Ensures the filename is standard format:
@@ -97,7 +107,7 @@ class Workout:
             Note the xtension is omited, this is left as an exercise for the caller
         '''
 
-        if iname[ 0 : 4] == "Move":
+        if iname[ 0 : 4 ] == "Move":
             return iname
 
         # Yes, yes I am ...
@@ -284,6 +294,19 @@ class Workout:
         return None
 
 
+    def _load_json( self, ifile, offset, name="" ):
+        ''' Reads the geo json component of the input stream '''
+        rawstr = ifile.read( offset )
+        if len( rawstr ) != offset:
+            raise IOError( "Reached EOF reading %s data" % name )
+
+        if len( rawstr ) > 0:
+            geo = geojson.loads( rawstr )
+            return geo
+
+        return None
+
+
     def _make_geo( self ):
         ''' Creates the geojson object from the points dataframe '''
 
@@ -296,26 +319,14 @@ class Workout:
             endpt = ( coords[ i ], coords[ i + 1 ] )
             props = { "hr" : self.df_points[ "heart_rate" ] }
             if "power" in self.df_points.columns:
-                props[ "pwr" ] : self.df_points[ "power" ][ i ]
+                props[ "pwr" ] = self.df_points[ "power" ][ i ]
 
             features.append( geojson.Feature( geometry=geojson.LineString( endpt ), 
                                               properties={}
                                             )
                            )
         self.js_geo = geojson.FeatureCollection( features )
-           
 
-    def _load_json( self, ifile, offset, name="" ):
-        ''' Reads the geo json component of the input stream '''
-        rawstr = ifile.read( offset )
-        if len( rawstr ) != offset:
-            raise IOError( "Reached EOF reading %s data" % name )
-
-        if len( rawstr ) > 0:
-            geo = geojson.loads( rawstr )
-            return geo
-
-        return None
 
 
 
