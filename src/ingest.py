@@ -7,6 +7,8 @@
 import os
 import sys
 
+from timeit import default_timer as timer
+
 import workout
 
 
@@ -17,15 +19,31 @@ def ingest( frm, to ):
         if not os.path.isdir( dir ):
             return "%s is not a directory." % frm
 
-    for fitfile in [ os.path.join( frm, f) for f in os.listdir( frm ) ]:
+    ast = timer()
+    for n, fitfile in enumerate( [ os.path.join( frm, f) for f in os.listdir( frm ) ] ):
         # We're only looking for the .FIT files, ignore anything else that may be there
         # Workout.ingest() will take care of any similarly-named .xlsx files
         if os.path.splitext( fitfile )[ 1 ] == ".fit":
             print( "Ingesting %s" % fitfile )
             wo = workout.Workout()
+            st = timer()
             err = wo.ingest( fitfile, to )
-            if err != "":
+            et = timer()
+            if err == "":
+                print( " ... Success in %.3f seconds" % (et - st) )
+            else:
                 print( " ... Failed [%s]" % err )
+
+    aet = timer()
+
+    dur = aet - ast
+    print( "Processed %d files in %d secs [%d:%d], mean=%.2f sec" % \
+            (n, 
+            dur,
+            int(dur / 60),
+            int(dur % 60),
+            dur / n)
+         )
 
 
 def main( argc, argv ):
