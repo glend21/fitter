@@ -73,7 +73,8 @@ class Workout:
         hdrstr = self.df_header.to_csv( path_or_buf=None, na_rep="NaN" )
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
-        geostr = geojson.dumps( self.js_geo, indent=2 )
+        #geostr = geojson.dumps( self.js_geo, indent=2 )
+        geostr = ""
 
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
@@ -101,17 +102,18 @@ class Workout:
             return iname
 
         # Yes, yes I am ...
-        match = re.match( r"^\w+_(\d{4})-(\d{2})-(\d{2})T(\d{2})_(\d{2})_(\d{2}).fit", iname )
+        match = re.match( r"(^\w+)_(\d{4})-(\d{2})-(\d{2})T(\d{2})_(\d{2})_(\d{2}).fit", iname )
         if not match:
             raise ValueError( "'%s' has unknown name format" )
 
-        ofname = "Move_%s_%s_%s_%s_%s_%s" % ( \
-                        match[ 1 ],         # year
-                        match[ 2 ],         # month
-                        match[ 3 ],         # day
-                        match[ 4 ],         # hour
-                        match[ 5 ],         # minute
-                        match[ 6 ] )        # second
+        ofname = "Move_%s_%s_%s_%s_%s_%s_%s" % ( \
+                        match[ 2 ],         # year
+                        match[ 3 ],         # month
+                        match[ 4 ],         # day
+                        match[ 5 ],         # hour
+                        match[ 6 ],         # minute
+                        match[ 7 ],         # second
+                        match[ 1 ] )        # activity type
         return ofname
 
 
