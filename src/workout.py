@@ -55,10 +55,10 @@ class Workout:
                 header = zifh.readline()
                 [shdr, spts, slaps, sgeo] = [ int(v) for v in header.split() ]
 
-                self.df_header = self._load_dataframe( ifh, shdr, "header" )
-                self.df_points = self._load_dataframe( ifh, spts, "points" )
-                self.df_laps = self._load_dataframe( ifh, slaps, "laps" )
-                self.df_geo = self._load_json( ifh, sgeo, "geo" )
+                self.df_header = self._load_dataframe( zifh, shdr, "header" )
+                self.df_points = self._load_dataframe( zifh, spts, "points" )
+                self.df_laps = self._load_dataframe( zifh, slaps, "laps" )
+                self.js_geo = self._load_json( zifh, sgeo, "geo" )
 
         except IOError as ex:
             err = "ERR: %s" % ex
@@ -73,8 +73,7 @@ class Workout:
         hdrstr = self.df_header.to_csv( path_or_buf=None, na_rep="NaN" )
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
-        #geostr = geojson.dumps( self.js_geo, indent=2 )
-        geostr = ""
+        geostr = geojson.dumps( self.js_geo, indent=2 )
 
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
@@ -277,6 +276,7 @@ class Workout:
         if len( rawstr ) != offset:
             raise IOError( "Reached EOF reading %s data" % name )
 
+        rawstr = rawstr.decode()
         if len( rawstr ) > 0:
             df = pd.read_csv( io.StringIO( rawstr ) )
             return df
@@ -328,14 +328,14 @@ if __name__ == "__main__":
     #wo.save( d, "wibble" )
 
     new_wo = Workout()
-    new_wo.load( "./Move_Running_2021_01_27_17_29_13.dfz" )
-    print( wo.df_points )
+    new_wo.load( "./Move_2021_01_27_17_29_13_Running.dfz" )
+    print( new_wo.js_geo )
 
-'''
+# '''
     mymap = folium.Map( location=[ -31.947, 115.859 ], zoom_start=15 )
     folium.GeoJson( new_wo.js_geo,
                     name="Run"
                     #style_function=style
                   ).add_to( mymap )
     mymap.save( "foo.html" )
-'''
+# '''

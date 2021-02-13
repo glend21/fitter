@@ -45,7 +45,7 @@ def month( yy, mm ):
                             days=caladp.get_days( yy, mm ) )
 
 
-@app.route( "/workout/<string:id>" )
+@app.route( "/workout/<string:wid>" )
 def workout( wid ):
     ''' Render a specific workout '''
     return "Workout - %s" % wid
