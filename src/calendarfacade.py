@@ -9,8 +9,8 @@ import sys
 from fitcalendar import Calendar
 
 
-class CalendarAdapter():
-    ''' Calendar adapter '''
+class CalendarFacade():
+    ''' Calendar facade '''
 
     def __init__( self ):
         ''' Ctor '''
@@ -32,7 +32,7 @@ class CalendarAdapter():
         sessions = self.cal.get_monthly()
         print( " *** %d" % len( sessions ) )
         alldata = []
-        for day in range( self.cal.get_max_days() ):
+        for day in range( 1, self.cal.get_max_days() + 1 ):     # days in month are 1-indexed  
             data = []
             if day in sessions:
                 # We may (will) have more than one session per date.
@@ -47,9 +47,6 @@ class CalendarAdapter():
                                  }
                                )
 
-                    #mnemonics.append( sess[ 'activity' ][ 0 ] )
-                    #urls.append( "/workout/%04d%02d%02d-%02d" % \
-                                 #(sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx) )
             else:
                 data.append( { 'mnemonic' : '-',
                                'id' : ''
@@ -58,13 +55,13 @@ class CalendarAdapter():
 
             alldata.append( 
                 {
-                    'daynum' : day + 1,     # days in month are 1-based
+                    'daynum' : day,     # + 1,     # days in month are 1-based
                     'sessions' : data
                     #'sessions' : mnemonics,
                     #'links' : urls
                 } )
 
-        #print( alldata )
+        print( alldata )
         return alldata
 
 
