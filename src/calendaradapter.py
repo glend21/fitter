@@ -30,26 +30,31 @@ class CalendarAdapter():
             self.cal = Calendar( year, month )
 
         sessions = self.cal.get_monthly()
+        print( " *** %d" % len( sessions ) )
         alldata = []
         for day in range( self.cal.get_max_days() ):
-            data = {}
+            data = []
             if day in sessions:
                 # We may (will) have more than one session per date.
                 # This means the FitCalendar will have to return a list for each date
                 # mnemonics = []
                 # urls = []
                 daily = sessions[ day ]
-                for ids, sess in enumerate( daily ):
-                    data[ 'mnemonic' ] = sess[ 'activity' ][ 0 ]
-                    data[ 'url' ] = "/workout/%04d%02d%02d-%02d" % \
-                                    (sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx)  
+                for idx, sess in enumerate( daily ):
+                    data.append( { 'mnemonic' : sess[ 'activity' ][ 0 ],
+                                   'id' :"/%04d%02d%02d-%02d" % \
+                                           (sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx)  
+                                 }
+                               )
 
                     #mnemonics.append( sess[ 'activity' ][ 0 ] )
                     #urls.append( "/workout/%04d%02d%02d-%02d" % \
                                  #(sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx) )
             else:
-                data[ 'mnemonic' ] = '-'
-                data[ 'url' ] = ''
+                data.append( { 'mnemonic' : '-',
+                               'id' : ''
+                             }
+                           )  
 
             alldata.append( 
                 {
@@ -59,6 +64,7 @@ class CalendarAdapter():
                     #'links' : urls
                 } )
 
+        #print( alldata )
         return alldata
 
 

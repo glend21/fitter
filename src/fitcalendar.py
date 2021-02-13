@@ -48,7 +48,7 @@ class Calendar():
     # protected:
     def _doInit( self ):
         ''' Build a list of sessions for the given year-month '''
-        fspec = os.path.join( _DATADIR, "Move_%04d_%02d*.df" % (self.year, self.month) )
+        fspec = os.path.join( _DATADIR, "Move_%04d_%02d*.dfz" % (self.year, self.month) )
         files = glob.glob( fspec )
 
         for f in files:
