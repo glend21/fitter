@@ -13,6 +13,7 @@ import glob
 import utils
 
 
+# FIXME TODO
 # Hard-coded for the moment .. see the github issue re. proper config
 _DATADIR = "../data"
 

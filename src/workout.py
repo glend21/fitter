@@ -16,7 +16,6 @@ import pandas as pd
 
 import fitdecode as fit
 import geojson
-import folium
 
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
@@ -29,7 +28,8 @@ class Workout:
     ''' The workkout class '''
 
     def __init__( self, fname=None ):
-        ''' ctor '''
+        ''' Ctor 
+            If the filename is specified, it is automatically loaded '''
         self.df_header = None
         self.df_points = None
         self.df_laps = None
@@ -74,7 +74,12 @@ class Workout:
         hdrstr = self.df_header.to_csv( path_or_buf=None, na_rep="NaN" )
         ptstr = self.df_points.to_csv( path_or_buf=None, na_rep="NaN" )  # shouldn't have NaNs
         lapstr = self.df_laps.to_csv( path_or_buf=None, na_rep="NaN" )
-        geostr = geojson.dumps( self.js_geo, indent=2 )
+
+        # May not have geo data. eg. gym, swim
+        if self.js_geo is not None:
+            geostr = geojson.dumps( self.js_geo, indent=2 )
+        else:
+            geostr = ""
 
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
@@ -208,6 +213,7 @@ class Workout:
 
         # Create dataframes from the lists (and perform some cleanups)
         self.df_points = pd.DataFrame( point_data, columns=_POINT_FEATURES )
+        print( self.df_points )
         self.df_points[ "position_lat" ] = self.df_points[ "position_lat" ] / ( (2 ** 32) / 360 )
         self.df_points[ "position_long" ] = self.df_points[ "position_long" ] / ( (2 ** 32) / 360 )
         self.df_points.fillna( method="bfill", inplace=True )        # NaNs == bad
@@ -216,7 +222,12 @@ class Workout:
         self.df_laps = pd.DataFrame( lap_data, columns=_LAP_FEATURES )
 
         # Now some geojson
-        self._make_geo()
+        if not self.df_points[ "position_lat" ].isna().all() and \
+           not self.df_points[ "position_long" ].isna().all():
+            print( "Making geo" )
+            self._make_geo()
+        else:
+            print( " ... no geo data" )
 
         return ""
 
@@ -239,6 +250,7 @@ class Workout:
             pt: Dict[ str, Union[ float, int, str, datetime ] ] = {}
             for fld in _POINT_FEATURES:
                 if frame.has_field( fld ):
+                    print( "Adding ", fld )
                     pt[ fld ] = frame.get_value( fld )
             points.append( pt )
 
@@ -300,6 +312,7 @@ class Workout:
         if len( rawstr ) != offset:
             raise IOError( "Reached EOF reading %s data" % name )
 
+        print( "LR: ", len( rawstr ))
         if len( rawstr ) > 0:
             geo = geojson.loads( rawstr )
             return geo
@@ -329,24 +342,25 @@ class Workout:
 
 
 
+import folium
 
 if __name__ == "__main__":
     # testing only
-    s = "/mnt/h_drive/SuuntoDiaspora/Running_2021-01-27T17_29_13.fit"
+    s = "/mnt/h_drive/SuuntoDiaspora/Running_2021-02-10T18_08_20.fit"
     d = "./"
     wo = Workout()
     wo.ingest( s, d )
     #wo.save( d, "wibble" )
 
     new_wo = Workout()
-    new_wo.load( "./Move_2021_01_27_17_29_13_Running.dfz" )
+    new_wo.load( "./Move_2021_02_10_18_08_20_Running.dfz" )
     print( new_wo.js_geo )
 
-# '''
+'''
     mymap = folium.Map( location=[ -31.947, 115.859 ], zoom_start=15 )
     folium.GeoJson( new_wo.js_geo,
                     name="Run"
                     #style_function=style
                   ).add_to( mymap )
     mymap.save( "foo.html" )
-# '''
+'''

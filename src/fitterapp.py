@@ -11,18 +11,20 @@ from datetime import date
 from flask import Flask, render_template
 
 from calendarfacade import CalendarFacade
+from workoutfacade import WorkoutFacade
 
 
 app = Flask( __name__ )
 
 cal_facade = CalendarFacade()
+wo_facade = WorkoutFacade()
 
 
 @app.route( "/" )
 def home():
     today = date.today()
     return month( today.year, today.month )
-    #return month( 2021, 1 )
+    # return render_template( "home.html" )
 
 
 @app.route( "/about" )
@@ -48,7 +50,8 @@ def month( yy, mm ):
 @app.route( "/workout/<string:wid>" )
 def workout( wid ):
     ''' Render a specific workout '''
-    return "Workout - %s" % wid
+    return wo_facade.get_map( wid=wid )
+    #return "Workout - %s" % wid
 
 
 if __name__ == "__main__":
