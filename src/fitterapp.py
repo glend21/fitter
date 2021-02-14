@@ -10,12 +10,12 @@ from datetime import date
 
 from flask import Flask, render_template
 
-from calendaradapter import CalendarAdapter
+from calendarfacade import CalendarFacade
 
 
 app = Flask( __name__ )
 
-caladp = CalendarAdapter()
+cal_facade = CalendarFacade()
 
 
 @app.route( "/" )
@@ -42,7 +42,7 @@ def month( yy, mm ):
     return render_template( "month.html", 
                             year=yy, 
                             month=dt.strftime( "%B" ),
-                            days=caladp.get_days( yy, mm ) )
+                            days=cal_facade.get_days( yy, mm ) )
 
 
 @app.route( "/workout/<string:wid>" )

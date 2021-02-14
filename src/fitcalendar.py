@@ -10,6 +10,8 @@ import datetime
 import calendar
 import glob
 
+import utils
+
 
 # Hard-coded for the moment .. see the github issue re. proper config
 _DATADIR = "../data"
@@ -63,12 +65,7 @@ class Calendar():
                 self.sessions[ int( day ) ] = []
 
             self.sessions[ int( day ) ].append(
-                    { 'day' : int( day ),
-                      'month' : int( self.month ),
-                      'year' : int( self.year ),
-                      'fname' : f,
-                      'activity' : activity
-                    } )
+                    utils.components_to_session( day, self.month, self.year, f, activity ) )
 
 
 

@@ -7,6 +7,7 @@
 import sys
 
 from fitcalendar import Calendar
+import utils
 
 
 class CalendarFacade():
@@ -41,9 +42,8 @@ class CalendarFacade():
                 # urls = []
                 daily = sessions[ day ]
                 for idx, sess in enumerate( daily ):
-                    data.append( { 'mnemonic' : sess[ 'activity' ][ 0 ],
-                                   'id' :"/%04d%02d%02d-%02d" % \
-                                           (sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx)  
+                    data.append( { 'mnemonic' : sess[ 'type' ][ 0 ],
+                                   'wid' : utils.session_to_wid( idx, sess )
                                  }
                                )
 
@@ -55,13 +55,11 @@ class CalendarFacade():
 
             alldata.append( 
                 {
-                    'daynum' : day,     # + 1,     # days in month are 1-based
+                    'daynum' : day,
                     'sessions' : data
-                    #'sessions' : mnemonics,
-                    #'links' : urls
                 } )
 
-        print( alldata )
+        # print( alldata )
         return alldata
 
 

@@ -6,3 +6,6 @@ A View returns HTML
 The core classes are concerned with the data
 The facade classes take the core data and create the HTML
 The app knows only about the facades
+
+Thinking of the ingest process generation the maps and graphs up front,
+rather than on demand by requests from the page.
