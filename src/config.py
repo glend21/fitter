@@ -15,7 +15,7 @@ class FitConfig():
     def __init__( self ):
         ''' Ctor '''
         try:
-            self._rootdir = =os.environ( self.AppRoot )
+            self._rootdir = os.environ[ self.AppRoot ]
         except KeyError:
             # Can't continue
             raise EnvironmentError( "'FITROOT' is not defined." )
@@ -26,5 +26,27 @@ class FitConfig():
             raise EnvironmentError( "Could not read from config file" )
 
 
+    # Getters
+    def get_import_dir( self ):
+        return self._get_value( "PATHS", "IMPORT_DIR" )
+
+    def get_data_dir( self ):
+        return self._get_value( "PATHS", "DATA_DIR" )
+
+
+
+    # protected:
+    def _get_value( self, section, name ):
+        ''' Internal generic get '''
+        try:
+            val = self.cfg[ section ][ name ]
+        except KeyError as ex:
+            # Logging is next on the TODO list
+            print( "ERR: %s" % ex )
+            val = None
+
+        return val
+
+
 # Singleton instance
-config = Config()
+config = FitConfig()
