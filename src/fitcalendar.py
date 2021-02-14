@@ -11,11 +11,7 @@ import calendar
 import glob
 
 import utils
-
-
-# FIXME TODO
-# Hard-coded for the moment .. see the github issue re. proper config
-_DATADIR = "../data"
+import config
 
 
 class Calendar():
@@ -51,7 +47,7 @@ class Calendar():
     # protected:
     def _doInit( self ):
         ''' Build a list of sessions for the given year-month '''
-        fspec = os.path.join( _DATADIR, "Move_%04d_%02d*.dfz" % (self.year, self.month) )
+        fspec = os.path.join( config.config.get_data_dir(), "Move_%04d_%02d*.dfz" % (self.year, self.month) )
         files = glob.glob( fspec )
 
         for f in files:

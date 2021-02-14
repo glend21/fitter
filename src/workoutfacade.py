@@ -41,16 +41,16 @@ class WorkoutFacade():
         origin = self.wo.js_geo[ "features" ][ 0 ][ "geometry" ][ "coordinates" ][ 0 ]
         mymap = folium.Map( location=tuple( reversed( origin ) ), zoom_start=14 )
         folium.GeoJson( self.wo.js_geo, 
-                        name="Workout"
-                        #style_function=style
+                        name="Workout",
+                        style_function=self._map_style
                       ).add_to( mymap )
         
-        mymap.save( "foo.html" )        # DEBUG
         return mymap._repr_html_()
 
 
     def get_plot( self, name="heart_rate" ):
         ''' Gets the named plot of data, or None if not available. '''
+        pass
 
 
     # protected:
@@ -80,3 +80,23 @@ class WorkoutFacade():
                 return files[ idx ]
 
         return None
+
+
+    def _map_style( self, feature ):
+        ''' Style function for the line string '''
+        print( feature[ "properties" ] )
+        # Hard-coding these here for the moment. They are just statistical quartiles. copied
+        # from an analysis of 1 run. I will replace them with proper HR zones.
+        lower_quartile = 158.0
+        upper_quartile = 162.0
+        if feature[ "properties" ][ "hr" ] < lower_quartile:
+            color = "#00ab00"
+        elif feature[ "properties" ][ "hr" ] > upper_quartile:
+            color = "#ab0000"
+        else:
+            color = "#abab00"
+
+        return { 'color': color,
+                 'weight': '5' ,
+                 'fill_opacity': '1.0' 
+                }

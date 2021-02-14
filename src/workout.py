@@ -77,6 +77,7 @@ class Workout:
 
         # May not have geo data. eg. gym, swim
         if self.js_geo is not None:
+            print( type( self.js_geo ) )
             geostr = geojson.dumps( self.js_geo, indent=2 )
         else:
             geostr = ""
@@ -250,7 +251,6 @@ class Workout:
             pt: Dict[ str, Union[ float, int, str, datetime ] ] = {}
             for fld in _POINT_FEATURES:
                 if frame.has_field( fld ):
-                    print( "Adding ", fld )
                     pt[ fld ] = frame.get_value( fld )
             points.append( pt )
 
@@ -312,7 +312,6 @@ class Workout:
         if len( rawstr ) != offset:
             raise IOError( "Reached EOF reading %s data" % name )
 
-        print( "LR: ", len( rawstr ))
         if len( rawstr ) > 0:
             geo = geojson.loads( rawstr )
             return geo
@@ -324,18 +323,18 @@ class Workout:
         ''' Creates the geojson object from the points dataframe '''
 
         # Create a list of coordinates, turn those into linestring endpoints, contstruct
-        # the actuall linestrings from those, and add them to the feature list
+        # the actual linestrings from those, and add them to the feature list
         # (long, lat) -- this is important
         coords = list( zip( self.df_points.position_long, self.df_points.position_lat ) )
         features = []
         for i in range( len( coords ) - 1 ):
             endpt = ( coords[ i ], coords[ i + 1 ] )
-            props = { "hr" : self.df_points[ "heart_rate" ] }
-            if "power" in self.df_points.columns:
+            props = { "hr" : self.df_points[ "heart_rate" ][ i ] }
+            if pd.notna( self.df_points[ "power" ][ i ] ):
                 props[ "pwr" ] = self.df_points[ "power" ][ i ]
 
             features.append( geojson.Feature( geometry=geojson.LineString( endpt ), 
-                                              properties={}
+                                              properties=props
                                             )
                            )
         self.js_geo = geojson.FeatureCollection( features )
