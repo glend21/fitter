@@ -50,8 +50,13 @@ def month( yy, mm ):
 @app.route( "/workout/<string:wid>" )
 def workout( wid ):
     ''' Render a specific workout '''
-    return wo_facade.get_map( wid=wid )
-    #return "Workout - %s" % wid
+
+    # FIXME this is proto code
+    map = wo_facade.get_map( wid=wid )
+    with open( "./static/map.html", "wt" ) as ofh:
+        ofh.write( map )
+
+    return render_template( "workout.html" )
 
 
 if __name__ == "__main__":
