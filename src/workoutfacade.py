@@ -84,7 +84,6 @@ class WorkoutFacade():
 
     def _map_style( self, feature ):
         ''' Style function for the line string '''
-        print( feature[ "properties" ] )
         # Hard-coding these here for the moment. They are just statistical quartiles. copied
         # from an analysis of 1 run. I will replace them with proper HR zones.
         lower_quartile = 158.0
