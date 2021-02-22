@@ -1,1 +1,2 @@
+export PYTHONPATH=/home/glend/pwe/fitter/src:$PYTHONPATH
 export FITROOT=/home/glend/pwe/fitter
