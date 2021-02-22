@@ -10,8 +10,7 @@ import datetime
 import calendar
 import glob
 
-import utils
-import config
+from fitcore import utils, config
 
 
 class Calendar():

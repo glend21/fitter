@@ -6,8 +6,7 @@
 
 import sys
 
-from fitcalendar import Calendar
-import utils
+from fitcore import fitcalendar, utils
 
 
 class CalendarFacade():
@@ -28,7 +27,7 @@ class CalendarFacade():
         '''
 
         if self.cal is None or self.cal.get_date() != (year, month):
-            self.cal = Calendar( year, month )
+            self.cal = fitcalendar.Calendar( year, month )
 
         sessions = self.cal.get_monthly()
         print( " *** %d" % len( sessions ) )
@@ -67,9 +66,9 @@ class CalendarFacade():
 def _test( argc, argv ):
     ''' unit testing '''
 
-    cad = CalendarAdapter()
+    facade = CalendarFacade()
 
-    print( cad.get_days( 2021, 1 ) )
+    print( facade.get_days( 2021, 1 ) )
     
 
 if __name__ == "__main__":

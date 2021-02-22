@@ -10,8 +10,8 @@ from datetime import date
 
 from flask import Flask, render_template
 
-from calendarfacade import CalendarFacade
-from workoutfacade import WorkoutFacade
+from app.calendarfacade import CalendarFacade
+from app.workoutfacade import WorkoutFacade
 
 
 app = Flask( __name__ )

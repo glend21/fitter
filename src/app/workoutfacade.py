@@ -12,9 +12,7 @@ import glob
 
 import folium
 
-import workout
-import config
-import utils
+from fitcore import workout, config, utils
 
 
 class WorkoutFacade():
