@@ -6,12 +6,15 @@
 
 import os
 import sys
+import logging
+from pathlib import Path
 from datetime import date
 
 from flask import Flask, render_template
 
-from app.calendarfacade import CalendarFacade
-from app.workoutfacade import WorkoutFacade
+from fitcore import config
+from fitapp.calendarfacade import CalendarFacade
+from fitapp.workoutfacade import WorkoutFacade
 
 
 app = Flask( __name__ )
@@ -59,5 +62,32 @@ def workout( wid ):
     return render_template( "workout.html" )
 
 
+def init_log():
+    ''' Set up logging '''
+    logdir = config.config.get_log_dir()
+    if logdir is None:
+        # System init impossible
+        print( "ERR: Could not start system: no log dir in config file" )
+        sys.exit( -1 )
+
+    logpath = Path( logdir )
+    newlogdir = False
+    if not logpath.is_dir():
+        logpath.mkdir()
+        newlogdir = True
+
+    logging.basicConfig( filename=Path( logdir ) / Path( "%s.log" % sys.argv[0] ).stem,
+                         level=logging.DEBUG,
+                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+                         datefmt='%m-%d %H:%M',
+                         filemode="a" )
+
+    if newlogdir:
+        logging.info( "created log directory: %s" % logdir )
+
+
 if __name__ == "__main__":
+
+    init_log()
+
     app.run( debug=True )

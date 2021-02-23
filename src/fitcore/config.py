@@ -27,6 +27,9 @@ class FitConfig():
 
 
     # Getters
+    def get_log_dir( self ):
+        return self._get_value( "PATHS", "LOG_DIR" )
+
     def get_import_dir( self ):
         return self._get_value( "PATHS", "IMPORT_DIR" )
 
