@@ -39,9 +39,8 @@ def about():
 def month( yy, mm ):
     try:
         dt = date( year=int( yy ), month=int( mm ), day=1 )
-        print( "--> %d %d" % (int( yy ), int( mm )) )
     except Exception as ex:
-        print( "Date components are incorrect - ", ex )
+        logging.error( "Date components are incorrect - ", ex )
         return "Date components are incorrect"
 
     return render_template( "month.html", 
@@ -54,6 +53,7 @@ def month( yy, mm ):
 def workout( wid ):
     ''' Render a specific workout '''
 
+    logging.debug( "Boo" )
     # FIXME this is proto code
     map = wo_facade.get_map( wid=wid )
     with open( "./static/map.html", "wt" ) as ofh:
@@ -78,7 +78,7 @@ def init_log():
 
     logging.basicConfig( filename=Path( logdir ) / Path( "%s.log" % sys.argv[0] ).stem,
                          level=logging.DEBUG,
-                         format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+                         format="%(asctime)s %(levelname)-8s %(message)s",
                          datefmt='%m-%d %H:%M',
                          filemode="a" )
 
@@ -91,3 +91,4 @@ if __name__ == "__main__":
     init_log()
 
     app.run( debug=True )
+

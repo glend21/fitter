@@ -9,6 +9,7 @@ import sys
 from fitcore import fitcalendar, utils
 
 
+# pylint: disable=too-few-public-methods
 class CalendarFacade():
     ''' Calendar facade '''
 
@@ -30,9 +31,8 @@ class CalendarFacade():
             self.cal = fitcalendar.Calendar( year, month )
 
         sessions = self.cal.get_monthly()
-        print( " *** %d" % len( sessions ) )
         alldata = []
-        for day in range( 1, self.cal.get_max_days() + 1 ):     # days in month are 1-indexed  
+        for day in range( 1, self.cal.get_max_days() + 1 ):     # days in month are 1-indexed
             data = []
             if day in sessions:
                 # We may (will) have more than one session per date.
@@ -50,9 +50,9 @@ class CalendarFacade():
                 data.append( { 'mnemonic' : '-',
                                'id' : ''
                              }
-                           )  
+                           )
 
-            alldata.append( 
+            alldata.append(
                 {
                     'daynum' : day,
                     'sessions' : data
@@ -63,13 +63,14 @@ class CalendarFacade():
 
 
 
+# pylint: disable=unused-argument
 def _test( argc, argv ):
     ''' unit testing '''
 
     facade = CalendarFacade()
 
     print( facade.get_days( 2021, 1 ) )
-    
+
 
 if __name__ == "__main__":
     _test( len( sys.argv ), sys.argv )

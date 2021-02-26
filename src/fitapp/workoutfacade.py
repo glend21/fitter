@@ -7,7 +7,6 @@
 # NB, currently using Folium, might be switching to Bokeh
 
 import os
-import json
 import glob
 
 import folium
@@ -38,11 +37,13 @@ class WorkoutFacade():
         # Massive leap of faith that the geojson is correct
         origin = self.wo.js_geo[ "features" ][ 0 ][ "geometry" ][ "coordinates" ][ 0 ]
         mymap = folium.Map( location=tuple( reversed( origin ) ), zoom_start=14 )
-        folium.GeoJson( self.wo.js_geo, 
+        folium.GeoJson( self.wo.js_geo,
                         name="Workout",
                         style_function=self._map_style
                       ).add_to( mymap )
-        
+
+        # This is folium's recommended way of embedding it's HTML in flask output
+        #pylint: disable=protected-access
         return mymap._repr_html_()
 
 
@@ -53,7 +54,7 @@ class WorkoutFacade():
 
     # protected:
     def _load( self, wid ):
-        ''' Loads the data for the given workout ID 
+        ''' Loads the data for the given workout ID
             Returns success bool
         '''
 
@@ -73,7 +74,7 @@ class WorkoutFacade():
         # We're assuming here that we have a wid
         idx, pattern = utils.wid_to_glob( wid )
         if idx >= 0:
-            files = glob.glob( os.path.join( config.config.get_data_dir(), pattern ) )
+            files = glob.glob( os.path.join( config.get_data_dir(), pattern ) )
             if len( files ) >= idx:
                 return files[ idx ]
 
@@ -95,5 +96,5 @@ class WorkoutFacade():
 
         return { 'color': color,
                  'weight': '5' ,
-                 'fill_opacity': '1.0' 
+                 'fill_opacity': '1.0'
                 }

@@ -5,12 +5,13 @@
 '''
 
 import os
-import sys
 import io
 import re
 import pathlib
+import logging
 import gzip
-from typing import Dict, Union, Optional,Tuple
+from typing import Dict, Union
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -18,17 +19,20 @@ import fitdecode as fit
 import geojson
 
 
+
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
-_POINT_FEATURES = ( "timestamp", "position_lat", "position_long", "heart_rate", "altitude", "speed", "vertical_speed", "cadence", "power" )
+_POINT_FEATURES = ( "timestamp", "position_lat", "position_long", "heart_rate", "altitude",
+                    "speed", "vertical_speed", "cadence", "power" )
 _POINT_DATA_FEATURES =_POINT_FEATURES[ 3 : ]
-_LAP_FEATURES = ( "number", "start_time", "total_distance", "total_elapsed_time", "max_speed", "max_heart_rate", "avg_heart_rate" )
+_LAP_FEATURES = ( "number", "start_time", "total_distance", "total_elapsed_time", "max_speed",
+                  "max_heart_rate", "avg_heart_rate" )
 
 
 class Workout:
     ''' The workkout class '''
 
     def __init__( self, fname=None ):
-        ''' Ctor 
+        ''' Ctor
             If the filename is specified, it is automatically loaded '''
         self.df_header = None
         self.df_points = None
@@ -43,15 +47,17 @@ class Workout:
     def ingest( self, fname, destdir ):
         ''' Build the data store for the workout from the input file(s) '''
 
-        fileset = self._canIngest( fname, destdir )
+        fileset = self._can_ingest( fname, destdir )
         if fileset is not None:
-            return self._doIngest( fileset )
+            return self._do_ingest( fileset )
+
+        return ""
 
 
     def load( self, src ):
         ''' Loads the df file from disk '''
         try:
-            print( "Load '%s'" % src )
+            logging.info( "Load '%s'", src )
             with gzip.open( src, "rb" ) as zifh:
                 header = zifh.readline()
                 [shdr, spts, slaps, sgeo] = [ int(v) for v in header.split() ]
@@ -77,7 +83,6 @@ class Workout:
 
         # May not have geo data. eg. gym, swim
         if self.js_geo is not None:
-            print( type( self.js_geo ) )
             geostr = geojson.dumps( self.js_geo, indent=2 )
         else:
             geostr = ""
@@ -85,7 +90,7 @@ class Workout:
         # Format: The first line contains the lengths of the following blocks, with a newline
         #   Then each block
         #   Each block is a dataframe with a header line
-        outstr = "%d %d %d %d\n" % (len(hdrstr), len(ptstr), len(lapstr), len(geostr)) 
+        outstr = "%d %d %d %d\n" % (len(hdrstr), len(ptstr), len(lapstr), len(geostr))
         outstr += hdrstr
         outstr += ptstr
         outstr += lapstr
@@ -93,7 +98,7 @@ class Workout:
 
         with gzip.open( dest, "wb" ) as zofh:
             zofh.write( str.encode( outstr ) )
-        print( " ... saved to %s" % dest )
+        logging.info( " ... saved to %s", dest )
 
 
     def feature_list( self ):
@@ -105,12 +110,12 @@ class Workout:
         return None
 
 
-    # protected: 
+    # protected:
     def _normalise_name_stub( self, iname ):
         ''' Ensures the filename is standard format:
             Move_<yyyy>_<mm>_<dd>_<hh>_<MM>_<ss>_<type>
 
-            Note the xtension is omited, this is left as an exercise for the caller
+            Note the extension is omited, this is left as an exercise for the caller
         '''
 
         if iname[ 0 : 4 ] == "Move":
@@ -132,7 +137,7 @@ class Workout:
         return ofname
 
 
-    def _canIngest( self, inpath, outdir ):
+    def _can_ingest( self, inpath, outdir ):
         ''' Determines what, if any, work needs to be done for this file path
             Returns:
                 {
@@ -146,34 +151,32 @@ class Workout:
             It is OK for the .xlsx to be missing
             It is mandatory for the .fit to be present
         '''
-        srcdir, srcfname = os.path.split( inpath )
-        srcstub, srcext = os.path.splitext( srcfname )
-        retval = { 'datafile' : inpath,
-                   'auxfile' : os.path.join( srcdir, "%s.xlsx" % srcfname ),
-                   'outfile' : os.path.join( outdir, "%s.dfz" % self._normalise_name_stub( srcfname ) )
-                 }
 
-        dname = pathlib.Path( retval[ 'datafile' ] )
-        aname = pathlib.Path( retval[ 'auxfile' ] )
-        oname = pathlib.Path( retval[ 'outfile' ] )
+        srcdir, srcfname = os.path.split( inpath )
+
+        datafile = pathlib.Path( inpath )
+        auxfile = pathlib.Path( srcdir ) / "%s.xlsx" % srcfname
+        outfile = pathlib.Path( outdir ) / "%s.dfz" % self._normalise_name_stub( srcfname )
 
         # If no .fit file, nothing to do
-        if not dname.exists():
+        if not datafile.exists():
             return None
 
-        # If no .df file, must perform the ingest
-        if not oname.exists():
-            return retval
-
-        files = [ dname ]
-        if aname.exists():
-            files.append( aname )
+        retval = { 'datafile' : datafile,
+                   'outfile' : outfile
+                 }
+        if auxfile.exists():
+            retval[ 'auxfile' ] = auxfile
         else:
             retval[ 'auxfile' ] = None
 
+        # If no .dfz file, must perform the ingest
+        if not outfile.exists():
+            return retval
+
         # If any file in the input set is newer than the output file, ingest
-        for f in files:
-            if f.stat().st_ctime > oname.stat().st_ctime:
+        for file in ( datafile, auxfile ):
+            if file.stat().st_ctime > outfile.stat().st_ctime:
                 return retval
 
         # Output file exists, is newer than all input file(s), do nothing
@@ -181,12 +184,12 @@ class Workout:
 
 
     # --
-    def _doIngest( self, files ):
+    def _do_ingest( self, files ):
         ''' Build the data store '''
 
         retval = self._ingest_fit( files[ 'datafile' ] )
         if retval == "":
-            if files[ 'auxfile' ] != None:
+            if files[ 'auxfile' ] is not None:
                 retval = self._ingest_xlsx( files[ 'auxfile' ] )
 
         if retval == "":
@@ -214,7 +217,6 @@ class Workout:
 
         # Create dataframes from the lists (and perform some cleanups)
         self.df_points = pd.DataFrame( point_data, columns=_POINT_FEATURES )
-        print( self.df_points )
         self.df_points[ "position_lat" ] = self.df_points[ "position_lat" ] / ( (2 ** 32) / 360 )
         self.df_points[ "position_long" ] = self.df_points[ "position_long" ] / ( (2 ** 32) / 360 )
         self.df_points.fillna( method="bfill", inplace=True )        # NaNs == bad
@@ -225,10 +227,10 @@ class Workout:
         # Now some geojson
         if not self.df_points[ "position_lat" ].isna().all() and \
            not self.df_points[ "position_long" ].isna().all():
-            print( "Making geo" )
+            logging.debug( "Making geo" )
             self._make_geo()
         else:
-            print( " ... no geo data" )
+            logging.info( " ... no geo data" )
 
         return ""
 
@@ -275,11 +277,11 @@ class Workout:
         except FileNotFoundError as ex:
             # OK for this file to not be present
             # If it's not there, we'll just save an empty header record to the .df
-            print( " ... no .xlsx to process" )
+            logging.info( " ... no .xlsx to process" )
             vals = [ "", "", "", "" ]
 
         else:
-            print( " ... processed an xlsx file" )
+            logging.info( " ... processed an xlsx file" )
 
         finally:
             # Turn the vals list into an object dataframe
@@ -333,7 +335,7 @@ class Workout:
             if pd.notna( self.df_points[ "power" ][ i ] ):
                 props[ "pwr" ] = self.df_points[ "power" ][ i ]
 
-            features.append( geojson.Feature( geometry=geojson.LineString( endpt ), 
+            features.append( geojson.Feature( geometry=geojson.LineString( endpt ),
                                               properties=props
                                             )
                            )

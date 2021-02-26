@@ -6,9 +6,8 @@
 
 import os
 import sys
-import datetime
 import calendar
-import glob
+import pathlib
 
 from fitcore import utils, config
 
@@ -26,7 +25,7 @@ class Calendar():
         self.month = month
         self.sessions = {}
 
-        self._doInit()
+        self._do_init()
 
 
     # public:
@@ -44,13 +43,16 @@ class Calendar():
 
 
     # protected:
-    def _doInit( self ):
+    def _do_init( self ):
         ''' Build a list of sessions for the given year-month '''
-        fspec = os.path.join( config.config.get_data_dir(), "Move_%04d_%02d*.dfz" % (self.year, self.month) )
-        files = glob.glob( fspec )
+        # fspec = os.path.join( config.get_data_dir(),
+        #                      "Move_%04d_%02d*.dfz", self.year, self.month )
+        #files = glob.glob( fspec )
 
-        for f in files:
-            base = os.path.splitext( f )[ 0 ]
+        for file in pathlib.Path( config.get_data_dir() ).glob( \
+                                     "Move_%04d_%02d*.dfz" % (self.year, self.month) ):
+        #for f in files:
+            base = os.path.splitext( file )[ 0 ]
             parts = base.split( '_' )
             day = parts[ 3 ]
             activity = parts[ -1 ]  # part after last underscore
@@ -61,10 +63,11 @@ class Calendar():
                 self.sessions[ int( day ) ] = []
 
             self.sessions[ int( day ) ].append(
-                    utils.components_to_session( day, self.month, self.year, f, activity ) )
+                    utils.components_to_session( day, self.month, self.year, file, activity ) )
 
 
 
+# pylint: disable=unused-argument
 def _test( argc, argv ):
     ''' unit testing '''
 
