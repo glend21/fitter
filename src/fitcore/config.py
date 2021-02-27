@@ -7,6 +7,7 @@
 import os
 import logging
 import configparser
+from pathlib import Path
 
 
 # pylint: disable=too-few-public-methods
@@ -23,7 +24,7 @@ class FitConfig():
             raise EnvironmentError( "'FITROOT' is not defined." ) from ex
 
         self.cfg = configparser.ConfigParser()
-        self.cfg.read( os.path.join( self._rootdir, "etc", "fit.cfg" ) )
+        self.cfg.read( Path( self._rootdir ) / "etc" / "fit.cfg" )
         if not self.cfg.sections():
             raise EnvironmentError( "Could not read from config file" )
 

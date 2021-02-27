@@ -4,10 +4,9 @@
     Calendar functionality
 '''
 
-import os
 import sys
 import calendar
-import pathlib
+from pathlib import Path
 
 from fitcore import utils, config
 
@@ -45,15 +44,10 @@ class Calendar():
     # protected:
     def _do_init( self ):
         ''' Build a list of sessions for the given year-month '''
-        # fspec = os.path.join( config.get_data_dir(),
-        #                      "Move_%04d_%02d*.dfz", self.year, self.month )
-        #files = glob.glob( fspec )
 
-        for file in pathlib.Path( config.get_data_dir() ).glob( \
-                                     "Move_%04d_%02d*.dfz" % (self.year, self.month) ):
-        #for f in files:
-            base = os.path.splitext( file )[ 0 ]
-            parts = base.split( '_' )
+        for file in Path( config.get_data_dir() ).glob( \
+                          "Move_%04d_%02d*.dfz" % (self.year, self.month) ):
+            parts = file.stem.split( '_' )
             day = parts[ 3 ]
             activity = parts[ -1 ]  # part after last underscore
 

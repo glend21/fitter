@@ -5,8 +5,37 @@
 '''
 
 import logging
+from pathlib import Path
+
+from fitcore import config
+
 
 __DUMMYWID = "yyyymmdd-nn"
+
+
+def init_log( exename ):
+    ''' Set up logging '''
+    logdir = config.get_log_dir()
+    if logdir is None:
+        # System init impossible
+        return "ERR: Could not start system: no log dir in config file"
+
+    logpath = Path( logdir )
+    newlogdir = False
+    if not logpath.is_dir():
+        logpath.mkdir()
+        newlogdir = True
+
+    logging.basicConfig( filename=Path( logdir ) / Path( "%s.log" % exename ).stem,
+                         level=logging.DEBUG,
+                         format="%(asctime)s %(levelname)-8s %(message)s",
+                         datefmt='%m-%d %H:%M',
+                         filemode="a" )
+
+    if newlogdir:
+        logging.info( "created log directory: %s", logdir )
+
+    return ""
 
 
 def session_to_wid( idx, sess ):

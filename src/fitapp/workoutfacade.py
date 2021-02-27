@@ -6,8 +6,7 @@
 
 # NB, currently using Folium, might be switching to Bokeh
 
-import os
-import glob
+from pathlib import Path
 
 import folium
 
@@ -74,9 +73,9 @@ class WorkoutFacade():
         # We're assuming here that we have a wid
         idx, pattern = utils.wid_to_glob( wid )
         if idx >= 0:
-            files = glob.glob( os.path.join( config.get_data_dir(), pattern ) )
+            files = sorted( Path( config.get_data_dir() ).glob( pattern ) )
             if len( files ) >= idx:
-                return files[ idx ]
+                return str( files[ idx ] )
 
         return None
 

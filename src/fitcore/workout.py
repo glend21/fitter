@@ -4,12 +4,12 @@
     The core Workout class for the activity processing system
 '''
 
-import os
 import io
 import re
-import pathlib
 import logging
 import gzip
+
+from pathlib import Path
 from typing import Dict, Union
 from datetime import datetime, timedelta
 
@@ -137,7 +137,7 @@ class Workout:
         return ofname
 
 
-    def _can_ingest( self, inpath, outdir ):
+    def _can_ingest( self, indir, outdir ):
         ''' Determines what, if any, work needs to be done for this file path
             Returns:
                 {
@@ -152,11 +152,12 @@ class Workout:
             It is mandatory for the .fit to be present
         '''
 
-        srcdir, srcfname = os.path.split( inpath )
+        inpath = Path( indir )
+        #srcdir, srcfname = os.path.split( inpath )
 
-        datafile = pathlib.Path( inpath )
-        auxfile = pathlib.Path( srcdir ) / "%s.xlsx" % srcfname
-        outfile = pathlib.Path( outdir ) / "%s.dfz" % self._normalise_name_stub( srcfname )
+        datafile = inpath
+        auxfile = inpath.parent / "%s.xlsx" % inpath.name
+        outfile = Path( outdir ) / "%s.dfz" % self._normalise_name_stub( inpath.name )
 
         # If no .fit file, nothing to do
         if not datafile.exists():
@@ -274,7 +275,7 @@ class Workout:
                     if df[ col ][ 0 ].split()[ 0 ] == feat and vals[ idx ] == "":
                         vals[ idx ] = df[ col ][ 1 ]
 
-        except FileNotFoundError as ex:
+        except FileNotFoundError:
             # OK for this file to not be present
             # If it's not there, we'll just save an empty header record to the .df
             logging.info( " ... no .xlsx to process" )
