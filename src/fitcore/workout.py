@@ -156,8 +156,8 @@ class Workout:
         #srcdir, srcfname = os.path.split( inpath )
 
         datafile = inpath
-        auxfile = inpath.parent / "%s.xlsx" % inpath.name
-        outfile = Path( outdir ) / "%s.dfz" % self._normalise_name_stub( inpath.name )
+        auxfile = inpath.parent / (inpath.name + ".xlsx")
+        outfile = Path( outdir ) / (self._normalise_name_stub( inpath.name ) + ".dfz")
 
         # If no .fit file, nothing to do
         if not datafile.exists():
@@ -190,8 +190,7 @@ class Workout:
 
         retval = self._ingest_fit( files[ 'datafile' ] )
         if retval == "":
-            if files[ 'auxfile' ] is not None:
-                retval = self._ingest_xlsx( files[ 'auxfile' ] )
+            retval = self._ingest_xlsx( files[ 'auxfile' ] )
 
         if retval == "":
             self.save( files[ 'outfile' ] )
@@ -262,31 +261,32 @@ class Workout:
         ''' Process a single .xlsx file
             Updates the object's internal state
         '''
+        # We will create a header record even if it is empty
         vals = [ "" ] * len( _HEADER_FEATURES )
 
-        try:
-            df = pd.read_excel( src )
+        if src is not None:
+            try:
+                df = pd.read_excel( src )
 
-            # Stoopid export format of the .xlsx file doesn't put feature names in the first row
-            for idx, feat in enumerate( _HEADER_FEATURES ):
-                for col in df:
-                    # And we only want the first word of the column header
-                    # ... and only the first occurance of that column name. Jeebus ...
-                    if df[ col ][ 0 ].split()[ 0 ] == feat and vals[ idx ] == "":
-                        vals[ idx ] = df[ col ][ 1 ]
+                # Stoopid export format of the .xlsx file doesn't put feature names in the first row
+                for idx, feat in enumerate( _HEADER_FEATURES ):
+                    for col in df:
+                        # And we only want the first word of the column header
+                        # ... and only the first occurance of that column name. Jeebus ...
+                        if df[ col ][ 0 ].split()[ 0 ] == feat and vals[ idx ] == "":
+                            vals[ idx ] = df[ col ][ 1 ]
 
-        except FileNotFoundError:
-            # OK for this file to not be present
-            # If it's not there, we'll just save an empty header record to the .df
-            logging.info( " ... no .xlsx to process" )
-            vals = [ "", "", "", "" ]
+            except FileNotFoundError:
+                # OK for this file to not be present
+                # If it's not there, we'll just save an empty header record to the .df
+                logging.info( " ... no .xlsx to process" )
+                vals = [ "", "", "", "" ]
 
-        else:
-            logging.info( " ... processed an xlsx file" )
+            else:
+                logging.info( " ... processed an xlsx file" )
 
-        finally:
-            # Turn the vals list into an object dataframe
-            self.df_header = pd.DataFrame( [ vals ], columns=_HEADER_FEATURES )
+        # Turn the vals list into an object dataframe
+        self.df_header = pd.DataFrame( [ vals ], columns=_HEADER_FEATURES )
 
         return ""
 

@@ -20,8 +20,9 @@ def ingest( frm, to ):
             logging.warning( "%s is not a directory.", frm )
             return
 
+    logging.info( " ========= Start =========" )
     ast = timer()
-    for n, fitfile in enumerate( Path( frm ) / f for f in Path( frm ).iterdir() ):
+    for n, fitfile in enumerate( f for f in Path( frm ).iterdir() ):
         # We're only looking for the .FIT files, ignore anything else that may be there
         # Workout.ingest() will take care of any similarly-named .xlsx files
         if fitfile.suffix == ".fit":
@@ -45,6 +46,7 @@ def ingest( frm, to ):
             int(dur % 60),
             dur / n
          )
+    logging.info( " ========= Finish =========" )
 
 
 def main( argc, argv ):

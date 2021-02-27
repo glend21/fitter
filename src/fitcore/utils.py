@@ -26,7 +26,8 @@ def init_log( exename ):
         logpath.mkdir()
         newlogdir = True
 
-    logging.basicConfig( filename=Path( logdir ) / Path( "%s.log" % exename ).stem,
+    logname = Path( exename ).stem + ".log"
+    logging.basicConfig( filename=Path( logdir ) / Path( logname ),
                          level=logging.DEBUG,
                          format="%(asctime)s %(levelname)-8s %(message)s",
                          datefmt='%m-%d %H:%M',
