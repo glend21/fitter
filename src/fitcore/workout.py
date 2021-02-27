@@ -29,11 +29,12 @@ _LAP_FEATURES = ( "number", "start_time", "total_distance", "total_elapsed_time"
 
 
 class Workout:
-    ''' The workkout class '''
+    ''' The workout class '''
 
     def __init__( self, fname=None ):
         ''' Ctor
-            If the filename is specified, it is automatically loaded '''
+            If the filename is specified, it is automatically loaded
+        '''
         self.df_header = None
         self.df_points = None
         self.df_laps = None

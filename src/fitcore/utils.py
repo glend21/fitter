@@ -85,6 +85,6 @@ def needs_refresh( file, compare_file ):
     '''
 
     path = Path( file ) if type( file ) is str else file
-    compare_path = Path( compare_file ) if type( compare_file ) is str else compare_File
+    compare_path = Path( compare_file ) if type( compare_file ) is str else compare_file
 
     return not path.exists() or path.stat().st_ctime < compare_path.stat().st_ctime
