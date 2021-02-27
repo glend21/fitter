@@ -13,6 +13,7 @@ from fitcore import config
 __DUMMYWID = "yyyymmdd-nn"
 
 
+# Shared logging between web app(s) and comd-line util(s)
 def init_log( exename ):
     ''' Set up logging '''
     logdir = config.get_log_dir()
@@ -72,3 +73,18 @@ def wid_to_glob( wid ):
                )
 
     return (-1, None)
+
+
+def needs_refresh( file, compare_file ):
+    ''' Determines if file needs to be regenerated:
+            true : file does not exist, or 
+                   compare_file is newer than file
+            false : otherwise
+
+        Inputs are string filenames or pathfile.Path objects
+    '''
+
+    path = Path( file ) if type( file ) is str else file
+    compare_path = Path( compare_file ) if type( compare_file ) is str else compare_File
+
+    return not path.exists() or path.stat().st_ctime < compare_path.stat().st_ctime
