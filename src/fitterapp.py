@@ -13,9 +13,12 @@ from flask import Flask, render_template
 from fitcore import utils
 from fitapp.calendarfacade import CalendarFacade
 from fitapp.workoutfacade import WorkoutFacade
+from fitapp.athleteform import AthleteForm
 
 
 app = Flask( __name__ )
+app.config['SECRET_KEY'] = "wibblewobble"
+
 
 cal_facade = CalendarFacade()
 wo_facade = WorkoutFacade()
@@ -31,6 +34,16 @@ def home():
 @app.route( "/about" )
 def about():
     return render_template( "About.html" )
+
+
+@app.route( "/athlete/<string:name>", methods=['GET', 'POST'] )
+def athlete( name ):
+    form = AthleteForm()
+    if form.validate_on_submit():
+        print( "Pickle me" )
+        flash('Form did something {}, age=={}'.format( form.name.data, form.age.data))
+        return redirect('/index')
+    return render_template( "athlete.html", title="Athlete %s" % name, form=form )
 
 
 @app.route( "/month/<int:yy>/<int:mm>" )

@@ -19,4 +19,8 @@ class AthleteForm( FlaskForm ):
     comment = StringField( "Comment" )
     startdate = DateField( "StartDate" )
     enddate = DateField( "EndDate" )
-    
+    submit = SubmitField( "Save" )
+
+    def __init__( self, *args, **kwargs ):
+        super( AthleteForm, self ).__init__( *args, **kwargs )
+
