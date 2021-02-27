@@ -9,3 +9,7 @@ The app knows only about the facades
 
 Thinking of the ingest process generation the maps and graphs up front,
 rather than on demand by requests from the page.
+
+flask-wtf is a wrapper around WTForms
+a form is defined by a Python class
+put the form classes in the application dir

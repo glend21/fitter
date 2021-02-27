@@ -36,6 +36,10 @@ class Assessment():
         self.comment = ""
 
 
+#
+# FIXME will get moved to it's own module
+#
+
 class Calculator( metaclass=abc.ABCMeta ):
     ''' Abstract base functor for Calculating a metric (eg. CSS) from one or more assessments '''
     def __call__( self, assess ):
@@ -59,7 +63,8 @@ class CalcBikeFTP( Calculator ):
 class CalcRunFTP( Calculator ):
     ''' Calculates run functional threshold pace '''
     pass
-
+#
+#
 
 class Athlete():
     ''' The Athlete class '''
@@ -70,6 +75,8 @@ class Athlete():
         self.age = -1
         self.weight = -1
         self.comment = ""
+        self.start_date = None
+        self.end_date = None
 
         self._assessments = None
 
