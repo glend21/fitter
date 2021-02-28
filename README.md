@@ -29,6 +29,10 @@ available. eg. run, bike workouts.
 
 It will eventually allow adding of comments to workouts (as per Movescount), tracking KPIs over time, ...
 
+This project does not download the .fit data straight off the sportswatch. Suunto, in their infinite
+wisdom, have limited this comms to their mobile app only. So the process of getting data from the device
+to the PC is an involved manual process. Solving that problem will be a task for a ***very*** rainy day.
+
 
 ### Dependencies
 
@@ -50,3 +54,20 @@ Very very basic web app, likely with links broken, and bereft of almost any styl
 
 Storing and editing data about an 'athlete' (tee hee!) in progress. Including this set of features as I
 can envision creating different athlete profiles over time, depending on training focus.
+
+
+### ToDo
+
+- well, just about everything on the Flask app side
+- analytics calculations
+    - critical swim speed (CSS)
+    - run functional threshold pace (rFTP)
+    - bike functional threshold power (bFTP)
+    - HR zones
+    - TSS : training stress score
+    - IF : intensity factor
+    - correlation of CSS / rFTP / bFTP to VO2max estimate
+    - develop gym TSS metric, based on sets, reps, weights, type of movement (multi-joint, single-joint, explosive, ...), pace ... ???
+- Dockerise the app
+- write an abstraction layer than will allow IO either on a local disk or S3 bucket
+- learn CSS. Come on Glen, you can do it!
