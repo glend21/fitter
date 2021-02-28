@@ -11,6 +11,8 @@ import logging
 from datetime import date
 from pathlib import Path
 
+import pandas as pd
+
 from fitcore import config
 
 
@@ -71,21 +73,42 @@ class Athlete():
 
     def __init__( self, name="", age=30, weight=75, comment="" ):
         ''' Ctor '''
-        self.name = ""
-        self.age = -1
-        self.weight = -1
-        self.comment = ""
-        self.start_date = None
-        self.end_date = None
+        self.prop_name = name
+        self.prop_age = -age
+        self.prop_weight = weight
+        self.prop_comment = comment
+        self.prop_start_date = None
+        self.prop_end_date = None
 
         self._assessments = None
+
+        self.myfname = None
+
 
     def load( self, fname ):
         #  with gzip.open( athfile, "rb" ) as zifh:
         pass
 
-    def save( self, fname ):
-        pass
+    def save( self, fname=None ):
+        ''' Save the athlete data to the named file, or the stored filename if None specified
+
+            return: True on success, False otherwise
+        '''
+
+        # All data should be contained within this object by this stage
+        if self.myfname is None:
+            self.myfname = "%s.dfz" % self.prop_name
+        ofile = Path( config.get_data_dir() ) / self.prop_name
+        logging.debug( "Will save to %s", str( ofile ) )
+
+        # The aim is to Pandafy the core data of this object automatically, so that I can
+        # add properties later and they will get picked up without having to edi different
+        # parts of the code
+        df = pd.DataFrame( data=[ self._obs_from_properties() ],
+                           columns=self._features_from_properties() )
+        print( df )
+
+        return True
 
     #
     # Factory class methods
@@ -106,9 +129,30 @@ class Athlete():
     @classmethod
     def from_data( cls, name="", age=30, weight=75, comment="" ):
         ''' Creates a new Athlete object from the passed-in values '''
-        return Athlete( name, age, weight, comments )
+        return Athlete( name, age, weight, comment )
 
 
+    #
+    # protected:
+    def _features_from_properties( self ):
+        ''' Return a list of names of properties of this object '''
+        return [ prop for prop in dir( self ) if str( prop )[ 0 : 5 ] == "prop_"]
+
+    def _obs_from_properties( self ):
+        ''' Return a list of values of properties of this object '''
+
+        # Apparently can't do this with a list comprehension. Pout-emoji
+        obs = []
+        for prop in dir( self ):
+            if str( prop )[ 0 : 5 ] == "prop_":
+                obs.append( eval( "self.%s" % prop ) )
+
+        return obs
+
+
+#
+# Util functions
+#
 
 def all_athletes():
     ''' Return list of all athlete's data '''
@@ -116,8 +160,7 @@ def all_athletes():
     # For each subdir in the data dir, if that dir contains an athlete file,
     # include it in the returned list
     retval = []
-    for directory in ( Path( d ) for d in config.get_data_dir().iterdir() if \
-                            d.is_dir() ):
+    for directory in ( d for d in Path( config.get_data_dir() ).iterdir() if d.is_dir() ):
         athfile = directory / "athlete.dfz"
         if athfile.exists():
             retval.append( Athlete.from_file( athfile ) )

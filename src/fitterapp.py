@@ -8,11 +8,12 @@ import sys
 import logging
 from datetime import date
 
-from flask import Flask, render_template
+from flask import Flask, render_template, flash, redirect
 
 from fitcore import utils
 from fitapp.calendarfacade import CalendarFacade
 from fitapp.workoutfacade import WorkoutFacade
+from fitapp.athletefacade import AthleteFacade
 from fitapp.athleteform import AthleteForm
 
 
@@ -22,6 +23,7 @@ app.config['SECRET_KEY'] = "wibblewobble"
 
 cal_facade = CalendarFacade()
 wo_facade = WorkoutFacade()
+ath_facade = AthleteFacade()
 
 
 @app.route( "/" )
@@ -42,7 +44,11 @@ def athlete( name ):
     if form.validate_on_submit():
         print( "Pickle me" )
         flash('Form did something {}, age=={}'.format( form.name.data, form.age.data))
-        return redirect('/index')
+        ath_facade.save_header( form )
+        return redirect('/')
+    else:
+        print( "Validation failed" )
+
     return render_template( "athlete.html", title="Athlete %s" % name, form=form )
 
 
