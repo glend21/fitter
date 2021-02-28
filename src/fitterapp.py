@@ -28,9 +28,11 @@ ath_facade = AthleteFacade()
 
 @app.route( "/" )
 def home():
-    today = date.today()
-    return month( today.year, today.month )
-    # return render_template( "home.html" )
+    # today = date.today()
+    # return month( today.year, today.month )
+
+    athletes = ath_facade.get_all()
+    return render_template( "home.html", athletes=athletes )
 
 
 @app.route( "/about" )

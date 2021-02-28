@@ -1,6 +1,15 @@
 {% extends "layout.html" %}
 
 {% block body %}
-    {% include "include/_month.html" %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">    
     
+    <div class="flex-container">
+        {% for ath in athletes %}
+            <div>{{ ath.prop_name }}</div>
+        {% endfor %}
+
+        <div>New</div>
+    </div>
+
 {% endblock %}

@@ -41,3 +41,11 @@ class AthleteFacade():
                 return ath
 
         return None
+
+
+    def get_all( self ):
+        ''' Return objects for all existing Athletes '''
+        aths = athlete.all_athletes()
+        logging.debug( aths )
+        return aths
+        

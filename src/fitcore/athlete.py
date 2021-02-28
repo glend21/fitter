@@ -5,6 +5,7 @@
 '''
 
 import abc
+import io
 import gzip
 import logging
 
@@ -86,20 +87,42 @@ class Athlete():
 
 
     def load( self, fname ):
-        #  with gzip.open( athfile, "rb" ) as zifh:
-        pass
+        ''' Load the date from disk '''
+        try:
+            logging.info( "Load athlete from '%s'", fname )
+            with gzip.open( fname, "rb" ) as zifh:
+                # FIXME this will have to chang ewhen we add more dataframes to the file
+                rawstr = zifh.read()
+                rawstr = rawstr.decode()
+                if len( rawstr ) > 0:
+                    df = pd.read_csv( io.StringIO( rawstr ) )
 
-    def save( self, fname=None ):
+        except IOError as ex:
+            logging.error( "Athlete load error: %s" % ex )
+            return False
+
+        if len( df.index ) == 1:
+            self._properties_from_obs( df.iloc[ 0 ] )
+        else:
+            logging.error( "%d lines in athlete header; should be only 1" % len( df.index ) )
+            return False
+
+        return True
+ 
+
+    def save( self ):
         ''' Save the athlete data to the named file, or the stored filename if None specified
 
             return: True on success, False otherwise
         '''
 
         # All data should be contained within this object by this stage
-        if self.myfname is None:
-            self.myfname = "%s.dfz" % self.prop_name
-        ofile = Path( config.get_data_dir() ) / self.prop_name
+        ofile = Path( config.get_data_dir() ) / self.prop_name / "athlete.dfz"
         logging.debug( "Will save to %s", str( ofile ) )
+
+        if not ofile.parent.exists():
+            ofile.parent.mkdir()
+            logging.info( "Created athlete dir %s", ofile.parent )
 
         # The aim is to Pandafy the core data of this object automatically, so that I can
         # add properties later and they will get picked up without having to edi different
@@ -107,6 +130,15 @@ class Athlete():
         df = pd.DataFrame( data=[ self._obs_from_properties() ],
                            columns=self._features_from_properties() )
         print( df )
+
+        # Serialise to strings first, as we will be dumping mutliple dataframes into the one file
+        dfstr = df.to_csv( path_or_buf=None, na_rep="NaN ")
+
+        # TODO file header record
+
+        with gzip.open( ofile, "wb" ) as zofh:
+            zofh.write( str.encode( dfstr ) )
+        logging.info( "Wrote athlete data" )
 
         return True
 
@@ -118,8 +150,8 @@ class Athlete():
         if Path( fname ).exists():
             retval = Athlete()
             try:
-                athlete.load( fname )
-                return athlete
+                retval.load( fname )
+                return retval
             except IOError as ex:
                 logging.error( ex )
 
@@ -150,6 +182,16 @@ class Athlete():
         return obs
 
 
+    def _properties_from_obs( self, observation ):
+        ''' Set this object's property members from the observation (Pandas Series) '''
+
+        for feat in observation.index:
+            if feat[ 0 : 5 ] == "prop_":
+                print( "%s --> %s" % (feat, observation[ feat ] ) )
+                # Everything is stored as a string in the dataframe
+                exec( "self.%s = '%s'" % (feat, observation[ feat ] ) )
+
+
 #
 # Util functions
 #
@@ -161,8 +203,10 @@ def all_athletes():
     # include it in the returned list
     retval = []
     for directory in ( d for d in Path( config.get_data_dir() ).iterdir() if d.is_dir() ):
+        print( str( directory ) )
         athfile = directory / "athlete.dfz"
         if athfile.exists():
+            print( "   yep" )
             retval.append( Athlete.from_file( athfile ) )
 
     return retval
