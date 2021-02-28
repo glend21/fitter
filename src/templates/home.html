@@ -3,10 +3,10 @@
 {% block body %}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">    
-    
+
     <div class="flex-container">
         {% for ath in athletes %}
-            <div>{{ ath.prop_name }}</div>
+            <div><a href="/athlete/{{ ath.prop_name }}">{{ ath.prop_name }}</a></div>
         {% endfor %}
 
         <div>New</div>
