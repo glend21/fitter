@@ -17,8 +17,8 @@
             {% for error in form.age.errors %}
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
-        </p>
-        <p>
+        
+       
             {{ form.weight.label }}<br>
             {{ form.weight(size=4) }}
             {% for error in form.weight.errors %}
@@ -47,5 +47,10 @@
             {% endfor %}
         </p>
         <p>{{ form.submit() }}</p>
+
+        <p>
+            {% include "include/_cal.html" %}
+        </p>
+
     </form>
 {% endblock %}
