@@ -17,17 +17,18 @@ import pandas as pd
 from fitcore import config
 
 
+# pylint: disable=too-many-instance-attributes
 class Assessment():
     ''' An assessment of capability.
 
         eg bike FTP, swim CSS, ...
     '''
 
-    def __init__( self, date=date.today() ):
+    def __init__( self, adate=date.today() ):
         ''' Ctor '''
 
         # All this says that the assessment was a 400m swim completed in a time of 7:37 minutes
-        self.date = date
+        self.date = adate
         self.name = ""
         self.activity = ""          # eg. swim
         self.span_value = -1        # eg. 400(m)
@@ -60,12 +61,18 @@ class CalcCSS( Calculator ):
 
 class CalcBikeFTP( Calculator ):
     ''' Calculates bike functional threshold power '''
-    pass
+    def __call__( self, assess ):
+        ''' Functor '''
+        pass
 
 
 class CalcRunFTP( Calculator ):
     ''' Calculates run functional threshold pace '''
-    pass
+    def __call__( self, assess ):
+        ''' Functor '''
+        pass
+
+
 #
 #
 
@@ -98,17 +105,17 @@ class Athlete():
                     df = pd.read_csv( io.StringIO( rawstr ) )
 
         except IOError as ex:
-            logging.error( "Athlete load error: %s" % ex )
+            logging.error( "Athlete load error: %s", ex )
             return False
 
         if len( df.index ) == 1:
             self._properties_from_obs( df.iloc[ 0 ] )
         else:
-            logging.error( "%d lines in athlete header; should be only 1" % len( df.index ) )
+            logging.error( "%d lines in athlete header; should be only 1", len( df.index ) )
             return False
 
         return True
- 
+
 
     def save( self ):
         ''' Save the athlete data to the named file, or the stored filename if None specified
@@ -177,18 +184,19 @@ class Athlete():
         obs = []
         for prop in dir( self ):
             if str( prop )[ 0 : 5 ] == "prop_":
-                obs.append( eval( "self.%s" % prop ) )
+                # pylint: disable=eval-used
+                obs.append( eval( "self.%s", prop ) )
 
         return obs
 
 
     def _properties_from_obs( self, observation ):
         ''' Set this object's property members from the observation (Pandas Series) '''
-
         for feat in observation.index:
             if feat[ 0 : 5 ] == "prop_":
                 print( "%s --> %s" % (feat, observation[ feat ] ) )
                 # Everything is stored as a string in the dataframe
+                # pylint: disable=exec-used
                 exec( "self.%s = '%s'" % (feat, observation[ feat ] ) )
 
 
@@ -210,4 +218,3 @@ def all_athletes():
             retval.append( Athlete.from_file( athfile ) )
 
     return retval
-

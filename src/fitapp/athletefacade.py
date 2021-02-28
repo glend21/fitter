@@ -17,7 +17,7 @@ class AthleteFacade():
     def __init__( self ):
         ''' Ctor '''
         pass
-        
+
 
     def save_header( self, theform ):
         ''' Save the Athlete's header details '''
@@ -48,4 +48,3 @@ class AthleteFacade():
         aths = athlete.all_athletes()
         logging.debug( aths )
         return aths
-        
