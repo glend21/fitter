@@ -44,10 +44,13 @@ class Workout:
 
 
     # public:
-    def ingest( self, fname, destdir ):
-        ''' Build the data store for the workout from the input file(s) '''
+    def ingest( self, infile, destdir ):
+        ''' Build the data store for the workout from the input file(s)
 
-        fileset = self._can_ingest( fname, destdir )
+            infile: a Path to a .fit file
+            destdir: a Path to a directory in which to store the ingested data
+        '''
+        fileset = self._can_ingest( infile, destdir )
         if fileset is not None:
             return self._do_ingest( fileset )
 
@@ -55,7 +58,7 @@ class Workout:
 
 
     def load( self, src ):
-        ''' Loads the df file from disk '''
+        ''' Load the df file from disk '''
         try:
             logging.info( "Load '%s'", src )
             with gzip.open( src, "rb" ) as zifh:
@@ -102,7 +105,7 @@ class Workout:
 
 
     def feature_list( self ):
-        ''' Returns the available features for the data '''
+        ''' Return the available features for the data '''
         if not self.df_points is None:
             dataset = set( self.df_points.columns.tolist() )
             return dataset.intersection( _POINT_DATA_FEATURES )
@@ -112,7 +115,7 @@ class Workout:
 
     # protected:
     def _normalise_name_stub( self, iname ):
-        ''' Ensures the filename is standard format:
+        ''' Ensure the filename is in the format:
             Move_<yyyy>_<mm>_<dd>_<hh>_<MM>_<ss>_<type>
 
             Note the extension is omited, this is left as an exercise for the caller
@@ -138,14 +141,14 @@ class Workout:
 
 
     def _can_ingest( self, indir, outdir ):
-        ''' Determines what, if any, work needs to be done for this file path
+        ''' Determine what, if any, work needs to be done for this file path
             Returns:
                 {
-                    datafile : full path to .fir file
-                    auxfile : full path to .xlsx, if one is present
+                    datafile : full path to .fit file
+                    auxfile : full path to .xlsx, if one is present, or None
                     outfile : full path to output .df file
                 }
-            None if .fit file does not exist, or if .df file exists and is older than
+            None if .fit file does not exist, or if .df file exists and is newer than
                     both .fit and .xlsx files
 
             It is OK for the .xlsx to be missing
@@ -199,8 +202,8 @@ class Workout:
 
 
     def _ingest_fit( self, src ):
-        ''' Processes a .FIT file
-            Updates the object's internal state, returns an empty sting on
+        ''' Process a .FIT file
+            Updates the object's internal state, returns an empty string on
              success, or an error string on failure
         '''
 
@@ -292,9 +295,8 @@ class Workout:
 
 
     def _load_dataframe( self, ifile, offset, name="" ):
-        ''' Reads the next 'offset' chars and (tries to) forms a DataFrame from them.
+        ''' Read the next 'offset' chars and (try to) form a DataFrame from them.
             Throws IOError on file read error
-            Throws something or other if can't create the DF
             Return the created DataFrame
         '''
         rawstr = ifile.read( offset )
@@ -310,7 +312,7 @@ class Workout:
 
 
     def _load_json( self, ifile, offset, name="" ):
-        ''' Reads the geo json component of the input stream '''
+        ''' Read the geo json component of the input stream '''
         rawstr = ifile.read( offset )
         if len( rawstr ) != offset:
             raise IOError( "Reached EOF reading %s data" % name )
@@ -323,7 +325,7 @@ class Workout:
 
 
     def _make_geo( self ):
-        ''' Creates the geojson object from the points dataframe '''
+        ''' Create the geojson object from the points dataframe '''
 
         # Create a list of coordinates, turn those into linestring endpoints, contstruct
         # the actual linestrings from those, and add them to the feature list
@@ -344,10 +346,12 @@ class Workout:
 
 
 
+#
+# testing only
+#
 import folium
 
 if __name__ == "__main__":
-    # testing only
     s = "/mnt/h_drive/SuuntoDiaspora/Running_2021-02-10T18_08_20.fit"
     d = "./"
     wo = Workout()

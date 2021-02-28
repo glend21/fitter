@@ -33,7 +33,6 @@ class FitConfig():
         try:
             val = self.cfg[ section ][ name ]
         except KeyError as ex:
-            # Logging is next on the TODO list
             logging.error( "ERR: %s", ex )
             val = None
 

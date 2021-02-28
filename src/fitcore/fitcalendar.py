@@ -29,15 +29,15 @@ class Calendar():
 
     # public:
     def get_monthly( self ):
-        ''' Returns the summary data for the month '''
+        ''' Return the summary data for the month '''
         return self.sessions
 
     def get_date( self ):
-        ''' Returns the year and month that this calenddar is for '''
+        ''' Return the year and month that this calenddar is for '''
         return (self.year, self.month)
 
     def get_max_days( self ):
-        ''' Returns the number of days in this calendar's month '''
+        ''' Return the number of days in this calendar's month '''
         return calendar.monthrange( self.year, self.month )[ 1 ]
 
 

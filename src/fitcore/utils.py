@@ -40,7 +40,7 @@ def init_log( exename ):
 
 
 def session_to_wid( idx, sess ):
-    ''' Converts a session dictionary to an id string '''
+    ''' Convert a session dictionary to an id string '''
     try:
         return "/%04d%02d%02d-%02d" % (sess[ 'year' ], sess[ 'month'], sess[ 'day' ], idx)
     except KeyError as ex:
@@ -49,12 +49,12 @@ def session_to_wid( idx, sess ):
 
 
 def wid_to_session( wid ):
-    ''' Constructs a session dictionary from an id string '''
+    ''' Construct a session dictionary from an id string '''
     pass
 
 
 def components_to_session( day=None, month=None, year=None, fname=None, stype=None ):
-    ''' Builds a session dict from its comonent parts '''
+    ''' Build a session dict from its comonent parts '''
     return {
                 'day' : int( day ),
                 'month' : int( month ),
@@ -65,7 +65,7 @@ def components_to_session( day=None, month=None, year=None, fname=None, stype=No
 
 
 def wid_to_glob( wid ):
-    ''' Creates (globbable string from the workout id, i'th session of day) from the wid string '''
+    ''' Create (globbable string from the workout id, i'th session of day) from the wid string '''
     if len( wid ) == len( __DUMMYWID ):
         return ( int( wid[ -2 : ] ),
                  "Move_%s_%s_%s*.dfz" % (wid[ : 4 ], wid[ 4 : 6 ], wid[ 6 : 8 ])
