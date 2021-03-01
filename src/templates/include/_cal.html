@@ -19,8 +19,8 @@
         <li class="prev">&#10094;</li>
         <li class="next">&#10095;</li>
         <li>
-          {{month}}<br>
-          <span style="font-size:18px">{{year}}</span>
+          {{date.month}}<br>
+          <span style="font-size:18px">{{date.year}}</span>
         </li>
       </ul>
     </div>
@@ -36,11 +36,11 @@
     </ul>
 
     <ul class="days">
-        {% for d in days %}
+        {% for day in date.days %}
             <li>
-                {{d.daynum}}<br>
-                {% for s in d.sessions %}
-                    <a href="/workout/{{s.id}}">{{s.mnemonic}}</a>
+                {{day.daynum}}<br>
+                {% for sess in day.sessions %}
+                    <a href="/workout/{{sess.id}}">{{sess.mnemonic}}</a>
                 {% endfor %}
             </li>
 

@@ -2,6 +2,8 @@
 ul {list-style-type: none;}
 body {font-family: Verdana, sans-serif;}
 
+/* Calendar elements 
+   credit W3Schools () */
 .month {
   padding: 70px 25px;
   width: 100%;
@@ -50,22 +52,6 @@ body {font-family: Verdana, sans-serif;}
   margin: 0;
 }
 
-.flex-container {
-  display: flex;
-  flex-wrap: wrap;
-  background-color: DodgerBlue;
-}
-
-.flex-container > div {
-  background-color: #f1f1f1;
-  width: 100px;
-  margin: 10px;
-  text-align: center;
-  line-height: 75px;
-  font-size: 30px;
-}
-
-
 .days li {
   list-style-type: none;
   display: inline-block;
@@ -83,6 +69,53 @@ body {font-family: Verdana, sans-serif;}
   background: #1abc9c;
   color: white !important
 }
+
+/* Landing page Flexbox elements
+   credit: W3Schools (https://www.w3schools.com/css/css3_flexbox.asp) */
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: DodgerBlue;
+}
+
+.flex-container > div {
+  background-color: #f1f1f1;
+  width: 100px;
+  margin: 10px;
+  text-align: center;
+  line-height: 75px;
+  font-size: 30px;
+}
+
+
+/* Accordian elements (Athlete editing, ...)
+   credit: W3Schools (https://www.w3schools.com/howto/howto_js_accordion.asp) */
+ /* Style the buttons that are used to open and close the accordion panel */
+.accordion {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .accordion:hover {
+  background-color: #ccc;
+}
+
+/* Style the accordion panel. Note: hidden by default */
+.editpanel {
+  padding: 0 18px;
+  background-color: white;
+  display: none;
+  overflow: hidden;
+}
+
 
 /* Add media queries for smaller screens */
 @media screen and (max-width:720px) {

@@ -51,9 +51,18 @@ def athlete( name ):
     else:
         print( "Validation failed" )
 
-    return render_template( "athlete.html", title="Athlete %s" % name, form=form )
+    today = date.today()
+    return render_template( "athlete.html", 
+                            title="Athlete %s" % name, 
+                            name=name, 
+                            form=form,
+                            date={ 'year' : today.year,
+                                   'month' : today.month,
+                                   'days' : cal_facade.get_days( today.year, today.month )
+                                 } )
 
 
+# FIXME Will probably go ...
 @app.route( "/month/<int:yy>/<int:mm>" )
 def month( yy, mm ):
     try:

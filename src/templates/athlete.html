@@ -1,56 +1,100 @@
+<!--
+    form: WTForms form
+    name: the athlete's name
+    date: { year: year,
+            month: month,
+            days: list of days for this month (see CalendarFacade.get_days())
+          }
+-->
+
 {% extends "layout.html" %}
 
 {% block body %}
-    <h1>Athlete</h1>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.name.label }}<br>
-            {{ form.name(size=32) }}
-            {% for error in form.name.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.age.label }}<br>
-            {{ form.age(size=4) }}
-            {% for error in form.age.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        
-       
-            {{ form.weight.label }}<br>
-            {{ form.weight(size=4) }}
-            {% for error in form.weight.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.comment.label }}<br>
-            {{ form.comment(size=100) }}
-            {% for error in form.comment.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.startdate.label }}<br>
-            {{ form.startdate(size=12) }}
-            {% for error in form.startdate.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.enddate.label }}<br>
-            {{ form.enddate(size=12) }}
-            {% for error in form.enddate.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
 
-        <p>
-            {% include "include/_cal.html" %}
-        </p>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">    
 
-    </form>
+    <h1>Athlete: {{ name }}</h1>
+    <br>
+
+    <button class="accordion">Edit</button>
+    <div class="editpanel">
+
+        <!--
+
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.name.label }}<br>
+                {{ form.name(size=32) }}
+                {% for error in form.name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.age.label }}<br>
+                {{ form.age(size=4) }}
+                {% for error in form.age.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            
+           
+                {{ form.weight.label }}<br>
+                {{ form.weight(size=4) }}
+                {% for error in form.weight.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.comment.label }}<br>
+                {{ form.comment(size=100) }}
+                {% for error in form.comment.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.startdate.label }}<br>
+                {{ form.startdate(size=12) }}
+                {% for error in form.startdate.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.enddate.label }}<br>
+                {{ form.enddate(size=12) }}
+                {% for error in form.enddate.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>{{ form.submit() }}</p>
+        </form>
+
+        -->
+
+        Karen Ipsum, Lorem's sister
+    </div>
+
+    <button class="accordion">Dummy</button>
+    <div class="editpanel">
+        Lorem ipsum
+    </div>
+
+    <script>
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+          acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+              panel.style.display = "none";
+            } else {
+              panel.style.display = "block";
+            }
+          });
+    </script>
+
+    <p>
+        {% include "include/_cal.html" %}
+    </p>
 {% endblock %}
