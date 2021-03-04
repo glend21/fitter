@@ -17,10 +17,14 @@
 
     <div class="month">      
       <ul>
-        <li class="prev">&#10094;</li>
-        <li class="next">&#10095;</li>
+        <li class="prev">
+            <a href="/athlete/{{name}}?year={{date.prev_year}}&month={{date.prev_month}}">&#10094;</a>
+        </li>
+        <li class="next">
+            <a href="/athlete/{{name}}?year={{date.next_year}}&month={{date.next_month}}">&#10095;</a>
+        </li>
         <li>
-          {{date.month}}<br>
+          {{date.month_name}}<br>
           <span style="font-size:18px">{{date.year}}</span>
         </li>
       </ul>
@@ -41,7 +45,7 @@
             <li>
                 {{day.daynum}}<br>
                 {% for sess in day.sessions %}
-                    <a href="/workout/{{sess.id}}">{{sess.mnemonic}}</a>
+                    <a href="/workout/{{sess.wid}}">{{sess.mnemonic}}</a>
                 {% endfor %}
             </li>
 

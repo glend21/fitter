@@ -7,8 +7,9 @@
 import sys
 import logging
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
-from flask import Flask, render_template, flash, redirect
+from flask import Flask, render_template, flash, redirect, request
 
 from fitcore import utils
 from fitapp.calendarfacade import CalendarFacade
@@ -42,6 +43,19 @@ def about():
 
 @app.route( "/athlete/<string:name>", methods=['GET', 'POST'] )
 def athlete( name ):
+
+    # Get the target month, and the previous and next months, to pass to the template
+    today = date.today()
+    year = request.args.get( "year" )
+    year = int( year ) if year is not None else today.year
+
+    month = request.args.get( "month" )
+    month = int( month ) if month is not None else today.month
+
+    tgt = date( year, month, 1 )
+    nxt = tgt + relativedelta( months =+ 1 )
+    prv = tgt + relativedelta( months =- 1 )
+
     form = AthleteForm()
     if form.validate_on_submit():
         print( "Pickle me" )
@@ -51,14 +65,18 @@ def athlete( name ):
     else:
         print( "Validation failed" )
 
-    today = date.today()
     return render_template( "athlete.html", 
                             title="Athlete %s" % name, 
                             name=name, 
                             form=form,
-                            date={ 'year' : today.year,
-                                   'month' : today.month,
-                                   'days' : cal_facade.get_days( today.year, today.month )
+                            date={ 'year' : year,
+                                   'month' : month,
+                                   'month_name' : tgt.strftime( "%b" ),
+                                   'days' : cal_facade.get_days( year, month ),
+                                   'prev_year' : prv.year,
+                                   'prev_month' : prv.month,
+                                   'next_year' : nxt.year,
+                                   'next_month' : nxt.month 
                                  } )
 
 
