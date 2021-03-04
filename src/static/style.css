@@ -108,14 +108,25 @@ body {font-family: Verdana, sans-serif;}
   background-color: #ccc;
 }
 
+.accordion:after {
+  content: '\002B';
+  color: #777;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
 /* Style the accordion panel. Note: hidden by default */
-.editpanel {
+.panel {
   padding: 0 18px;
   background-color: white;
   display: none;
   overflow: hidden;
 }
-
 
 /* Add media queries for smaller screens */
 @media screen and (max-width:720px) {

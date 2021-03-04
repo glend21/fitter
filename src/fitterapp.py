@@ -90,6 +90,29 @@ def workout( wid ):
     return render_template( "workout.html" )
 
 
+@app.route( "/sandbox", methods=['GET', 'POST'] )
+def sandbox():
+    logging.debug( "sandbox" )
+
+    form = AthleteForm()
+
+    if form.validate_on_submit():
+        print( "Pickle me" )
+        flash('Form did something {}, age=={}'.format( form.name.data, form.age.data))
+        #ath_facade.save_header( form )
+        return redirect('/')
+    else:
+        print( "Validation failed" )
+
+    today = date.today()
+    return render_template( "sandbox01.html", title="Athlete Foo", 
+                            name="Sandbox", 
+                            form=form,
+                            date={ 'year' : today.year,
+                                   'month' : today.month,
+                                   'days' : cal_facade.get_days( today.year, today.month )
+                                 } )
+
 
 if __name__ == "__main__":
 
