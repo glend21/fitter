@@ -8,6 +8,7 @@ import io
 import re
 import logging
 import gzip
+import uuid
 
 from pathlib import Path
 from typing import Dict, Union
@@ -17,7 +18,6 @@ import pandas as pd
 
 import fitdecode as fit
 import geojson
-
 
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
@@ -45,13 +45,16 @@ class Workout:
 
 
     # public:
-    def ingest( self, fname, destdir ):
+    def ingest( self, srcdir, destdir, staticdir ):
         ''' Build the data store for the workout from the input file(s) '''
 
-        fileset = self._can_ingest( fname, destdir )
+        fileset = self._can_ingest( srcdir, destdir )
         if fileset is not None:
-            return self._do_ingest( fileset )
+            retval = self._do_ingest( fileset )
+            if retval != "" and staticdir != None:
+                retval = _generate_visuals( staticdir )
 
+        # FIXME proper return code (issue #18)
         return ""
 
 
@@ -185,7 +188,6 @@ class Workout:
         return None
 
 
-    # --
     def _do_ingest( self, files ):
         ''' Build the data store '''
 
@@ -342,6 +344,24 @@ class Workout:
                                             )
                            )
         self.js_geo = geojson.FeatureCollection( features )
+
+
+    def _generate_visuals( self, dest ):
+        ''' Produce plots of data '''
+
+        for feat in _POINT_DATA_FEATURES:
+            data = self.df_points[ feat ]
+
+            plt.figure()
+            plt.title( feat )
+            plt.plot( data )
+
+            out = dest / "%s.png" % uuid.uuid4().hex
+            plt.savefig( out )
+            logging.debug( "%s to %s" % feat, out )
+            # FIXME store the filename(s) in the header
+
+        # TODO TEST THIS TODO ! ! !
 
 
 

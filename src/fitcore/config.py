@@ -52,3 +52,6 @@ def get_import_dir():
 
 def get_data_dir():
     return __CONFIG.get_value( "PATHS", "DATA_DIR" )
+
+def get_static_dir():
+    return __CONFIG.get_value( "PATHS", "STATIC_DIR" )

@@ -15,12 +15,12 @@ from timeit import default_timer as timer
 from fitcore import workout, config, utils
 
 
-def ingest( frm, to, date_after=None ):
+def ingest( frm, to, static=None, date_after=None ):
     ''' Ensure each src .FIT file has a corresponding .df file in the dest data dir
         frm, to are Paths
     '''
 
-    for path in [frm, to]:
+    for path in [ frm, to, static ]:
         if not path.is_dir():
             logging.warning( "%s is not a directory.", path )
             return
@@ -37,7 +37,7 @@ def ingest( frm, to, date_after=None ):
         logging.info( "Ingesting %s", str( fitfile ) )
         wo = workout.Workout()
         st = timer()
-        err = wo.ingest( fitfile, to )
+        err = wo.ingest( fitfile, to, static )
         et = timer()
         if err == "":
             logging.info( " ... Success in %.3f seconds", (et - st) )
@@ -79,10 +79,12 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument( "-a", "--athlete",
                         help="Ingest files for the named athlete. Dirs are specified in config file." )
-    group.add_argument( "-t", "--to",
+    group.add_argument( "-t", "--todor",
                         help="Explicit location to which to store the ingested data." )
-    parser.add_argument( "-s", "--source",
+    parser.add_argument( "-f", "--fromdir",
                          help="Location from which to ingest the raw data." )
+    parser.add_argument( "-s", "--staticdir",
+                         "Location in which to store static assets" )
     parser.add_argument( "-d", "--date",
                         help="Ingest only those files newer than date (yyyy-mm-dd)." )
     args = parser.parse_args()
@@ -90,16 +92,21 @@ def main():
     if args.athlete is not None:
         # We're using the standard output location from the config file, with the athlete name appended
         dest = Path( config.get_data_dir() ) / args.athlete
-    elif args.to is not None:
+    elif args.todir is not None:
         # Explicit destination dir
         dest = Path( args.to ).resolve()
     else:
         init_fail( "Must specify one of -a <athlete> or -t <to>" )
 
-    if args.source is not None:
-        src = Path( args.source ).resolve()
+    if args.fromdir is not None:
+        src = Path( args.fromdir ).resolve()
     else:
         init_fail( "Must specify -s <source-dir>" )
+
+    if args.staticdir is not None:
+        static = Path( args.staticdir ).resolve()
+    else:
+        static = Path( config.get_static_dir() )
 
     if args.date is not None:
         try:
@@ -109,7 +116,7 @@ def main():
     else:
         dt = None
 
-    ingest( src, dest, dt )
+    ingest( src, dest, static, dt )
 
 
 if __name__ == "__main__":

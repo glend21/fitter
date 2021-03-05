@@ -108,6 +108,7 @@ def workout( wid ):
     return render_template( "workout.html" )
 
 
+'''
 @app.route( "/sandbox", methods=['GET', 'POST'] )
 def sandbox():
     logging.debug( "sandbox" )
@@ -130,6 +131,7 @@ def sandbox():
                                    'month' : today.month,
                                    'days' : cal_facade.get_days( today.year, today.month )
                                  } )
+'''
 
 
 if __name__ == "__main__":
