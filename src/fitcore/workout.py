@@ -190,7 +190,7 @@ class Workout:
             if infile.stat().st_ctime > outfile.stat().st_ctime or \
                plotfile is None or \
                not plotfile.exists() \
-               or infile.stat().c_time > plotfile.stat().c_time:
+               or infile.stat().st_time > plotfile.stat().st_time:
                 return retval
 
         # Output file exists, is newer than all input file(s), do nothing
@@ -363,14 +363,19 @@ class Workout:
             return
 
         figures = []
-        for feat in _POINT_DATA_FEATURES:
+        for n, feat in enumerate( _POINT_DATA_FEATURES ):
+            logging.debug( "Creating plot for %s" % feat )
             data = self.df_points[ feat ]
 
             fig = bk_fig( title=feat,
                           x_axis_label="Time" )
 
-            fig.line( data )
+            fig.line( self.df_points[ "timestamp" ], data )
             figures.append( fig )
+
+            # DEBUG
+            if n > 1:
+                break
 
         pl = bk_grid( [ figures ] )
         print( "Writing plot to %s" % fileset[ "plotfile" ] )
