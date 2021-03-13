@@ -44,6 +44,9 @@ def ingest( frm, to, static=None, date_after=None ):
         else:
             logging.error( " ... Failed [%s]", err )
 
+        # DEBUG
+        #break
+
     aet = timer()
     dur = aet - ast
 
@@ -79,34 +82,38 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument( "-a", "--athlete",
                         help="Ingest files for the named athlete. Dirs are specified in config file." )
-    group.add_argument( "-t", "--todor",
+    group.add_argument( "-t", "--todir",
                         help="Explicit location to which to store the ingested data." )
     parser.add_argument( "-f", "--fromdir",
                          help="Location from which to ingest the raw data." )
     parser.add_argument( "-s", "--staticdir",
-                         "Location in which to store static assets" )
+                         help="Location in which to store static assets" )
     parser.add_argument( "-d", "--date",
-                        help="Ingest only those files newer than date (yyyy-mm-dd)." )
+                         help="Ingest only those files newer than date (yyyy-mm-dd)." )
     args = parser.parse_args()
 
     if args.athlete is not None:
-        # We're using the standard output location from the config file, with the athlete name appended
+        # We're using the standard locations from the config file, with the athlete name appended
+        src = Path( config.get_import_dir() )
         dest = Path( config.get_data_dir() ) / args.athlete
-    elif args.todir is not None:
-        # Explicit destination dir
-        dest = Path( args.to ).resolve()
-    else:
-        init_fail( "Must specify one of -a <athlete> or -t <to>" )
-
-    if args.fromdir is not None:
-        src = Path( args.fromdir ).resolve()
-    else:
-        init_fail( "Must specify -s <source-dir>" )
-
-    if args.staticdir is not None:
-        static = Path( args.staticdir ).resolve()
-    else:
         static = Path( config.get_static_dir() )
+
+    else:
+        if args.todir is not None:
+            # Explicit destination dir
+            dest = Path( args.to ).resolve()
+        else:
+            init_fail( "Must specify one of -a <athlete> or -t <to>" )
+
+        if args.fromdir is not None:
+            src = Path( args.fromdir ).resolve()
+        else:
+            init_fail( "Must specify -f <from-dir>" )
+
+        if args.staticdir is not None:
+            static = Path( args.staticdir ).resolve()
+        else:
+            static = Path( config.get_static_dir() )
 
     if args.date is not None:
         try:

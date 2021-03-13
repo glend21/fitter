@@ -19,6 +19,11 @@ import pandas as pd
 import fitdecode as fit
 import geojson
 
+# All the bokehs
+from bokeh.io import output_file as bk_ofile, show as bk_show
+from bokeh.layouts import gridplot as bk_grid
+from bokeh.plotting import figure as bk_fig
+
 
 _HEADER_FEATURES = ( "Activity", "StartTime", "Feeling", "Notes")
 _POINT_FEATURES = ( "timestamp", "position_lat", "position_long", "heart_rate", "altitude",
@@ -48,11 +53,13 @@ class Workout:
     def ingest( self, srcdir, destdir, staticdir ):
         ''' Build the data store for the workout from the input file(s) '''
 
-        fileset = self._can_ingest( srcdir, destdir )
+        logging.info( "Ingesting %s %s %s" % (str( srcdir ), str( destdir ), str( staticdir )) )
+        fileset = self._can_ingest( srcdir, destdir, staticdir )
+        logging.debug( fileset )
         if fileset is not None:
             retval = self._do_ingest( fileset )
-            if retval != "" and staticdir != None:
-                retval = _generate_visuals( staticdir )
+            if retval == "":
+                retval = self._generate_visuals( fileset )
 
         # FIXME proper return code (issue #18)
         return ""
@@ -141,7 +148,7 @@ class Workout:
         return ofname
 
 
-    def _can_ingest( self, indir, outdir ):
+    def _can_ingest( self, indir, outdir, staticdir ):
         ''' Determines what, if any, work needs to be done for this file path
             Returns:
                 {
@@ -156,32 +163,34 @@ class Workout:
             It is mandatory for the .fit to be present
         '''
 
-        inpath = Path( indir )
-        #srcdir, srcfname = os.path.split( inpath )
-
-        datafile = inpath
-        auxfile = inpath.parent / (inpath.name + ".xlsx")
-        outfile = Path( outdir ) / (self._normalise_name_stub( inpath.name ) + ".dfz")
+        datafile = Path( indir )
+        auxfile = datafile.parent / (datafile.name + ".xlsx")
+        outfile = Path( outdir ) / (self._normalise_name_stub( datafile.name ) + ".dfz")
+        if staticdir is not None:
+            plotfile = Path( staticdir ) / (self._normalise_name_stub( datafile.name ) + ".html")
+        else:
+            plotfile = None
 
         # If no .fit file, nothing to do
         if not datafile.exists():
             return None
 
-        retval = { 'datafile' : datafile,
-                   'outfile' : outfile
+        retval = { "datafile" : datafile,
+                   "outfile"  : outfile,
+                   "plotfile" : plotfile,
+                   "auxfile"  : auxfile if auxfile.exists else None
                  }
-        if auxfile.exists():
-            retval[ 'auxfile' ] = auxfile
-        else:
-            retval[ 'auxfile' ] = None
 
         # If no .dfz file, must perform the ingest
         if not outfile.exists():
             return retval
 
-        # If any file in the input set is newer than the output file, ingest
-        for file in ( datafile, auxfile ):
-            if file.stat().st_ctime > outfile.stat().st_ctime:
+        # If any file in the input set is newer than the output file(s), ingest
+        for infile in ( datafile, auxfile ):
+            if infile.stat().st_ctime > outfile.stat().st_ctime or \
+               plotfile is None or \
+               not plotfile.exists() \
+               or infile.stat().c_time > plotfile.stat().c_time:
                 return retval
 
         # Output file exists, is newer than all input file(s), do nothing
@@ -346,20 +355,29 @@ class Workout:
         self.js_geo = geojson.FeatureCollection( features )
 
 
-    def _generate_visuals( self, dest ):
+    def _generate_visuals( self, fileset ):
         ''' Produce plots of data '''
 
+        print( "Hello" )
+        if not "plotfile" in fileset.keys():
+            return
+
+        figures = []
         for feat in _POINT_DATA_FEATURES:
             data = self.df_points[ feat ]
 
-            plt.figure()
-            plt.title( feat )
-            plt.plot( data )
+            fig = bk_fig( title=feat,
+                          x_axis_label="Time" )
 
-            out = dest / "%s.png" % uuid.uuid4().hex
-            plt.savefig( out )
-            logging.debug( "%s to %s" % feat, out )
-            # FIXME store the filename(s) in the header
+            fig.line( data )
+            figures.append( fig )
+
+        pl = bk_grid( [ figures ] )
+        print( "Writing plot to %s" % fileset[ "plotfile" ] )
+        bk_ofile( fileset[ "plotfile"] )
+        bk_show( fig )
+
+        # FIXME store the filename(s) in the header
 
         # TODO TEST THIS TODO ! ! !
 
